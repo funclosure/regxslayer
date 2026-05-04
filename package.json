@@ -1,0 +1,28 @@
+{
+  "name": "regxslayer",
+  "version": "0.1.0",
+  "description": "Terminal regex-practice game",
+  "type": "module",
+  "main": "src/cli.tsx",
+  "bin": {
+    "regxslayer": "src/cli.tsx"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.tsx",
+    "test": "bun test",
+    "validate-content": "bun run scripts/validate-content.ts",
+    "build": "bun run scripts/validate-content.ts && bun build --compile src/cli.tsx --outfile dist/regxslayer",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gridland/bun": "latest",
+    "@gridland/utils": "latest",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@gridland/testing": "latest",
+    "@types/react": "^19.0.0",
+    "@types/bun": "latest",
+    "typescript": "^5.4.0"
+  }
+}
