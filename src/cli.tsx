@@ -4,8 +4,8 @@ import { createCliRenderer, createRoot } from "@gridland/bun";
 import { useTerminalDimensions } from "@gridland/utils";
 import { App } from "./app";
 
-const MIN_COLS = 100;
-const MIN_ROWS = 30;
+const MIN_COLS = 80;
+const MIN_ROWS = 24;
 
 function Root(): React.ReactElement {
   const { width, height } = useTerminalDimensions();
