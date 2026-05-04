@@ -20,9 +20,8 @@
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@gridland/testing": "latest",
-    "@types/react": "^19.0.0",
     "@types/bun": "latest",
+    "@types/react": "^19.0.0",
     "typescript": "^5.4.0"
   }
 }
