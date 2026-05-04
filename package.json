@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Terminal regex-practice game",
   "type": "module",
-  "main": "src/cli.tsx",
   "bin": {
     "regxslayer": "src/cli.tsx"
   },
@@ -11,7 +10,8 @@
     "dev": "bun run src/cli.tsx",
     "test": "bun test",
     "validate-content": "bun run scripts/validate-content.ts",
-    "build": "bun run scripts/validate-content.ts && bun build --compile src/cli.tsx --outfile dist/regxslayer",
+    "build": "bun build --compile src/cli.tsx --outfile dist/regxslayer",
+    "build:full": "bun run scripts/validate-content.ts && bun build --compile src/cli.tsx --outfile dist/regxslayer",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
