@@ -2,5 +2,5 @@
 exact = false
 
 [test]
-preload = []
+# preload = []
 coverage = false
