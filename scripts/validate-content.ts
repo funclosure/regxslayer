@@ -63,7 +63,6 @@ export function validateChapter(chapter: Chapter): ValidationIssue[] {
 
 // Run as script: validate every chapter in src/content/chapters.ts
 async function main(): Promise<void> {
-  // @ts-expect-error chapters.ts is created in a later task
   const mod = await import("../src/content/chapters");
   const chapters: Chapter[] = mod.chapters;
   const all = chapters.flatMap((c) => validateChapter(c).map((i) => ({ chapterId: c.id, ...i })));
