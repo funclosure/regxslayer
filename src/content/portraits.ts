@@ -3,4 +3,8 @@ export const portraits: Record<string, string[]> = {
   caretling:  ["   ^^^   ", "  /. .\\  ", "  \\___/  "],
   pinmeister: ["  |---|  ", "  | $ |  ", "  '---'  "],
   alternaut:  ["  /-|-\\  ", " ( o|o ) ", "  \\-|-/  "],
+  digiton:    ["  [123]  ", "  /0 0\\  ", "  \\_8_/  "],
+  worderly:   ["  {abc}  ", "  /a a\\  ", "  \\___/  "],
+  spaceblob:  ["  ~~~~~  ", "  ' '    ", "         "],
+  rangewolf:  ["  /a-z\\  ", " (•   •) ", "  \\___/  "],
 };
