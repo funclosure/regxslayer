@@ -7,11 +7,12 @@ export type RegexInputProps = {
 };
 
 export function RegexInput({ value, onChange, invalid }: RegexInputProps): React.ReactElement {
+  // gridland's <input> renders the value itself (with cursor). The leading
+  // "▶" marker is a separate static element; we must NOT also render the
+  // value as static text or it doubles up visually.
   return (
     <box flexDirection="row" gap={1}>
-      <text>▶ {value}</text>
-      {/* gridland's <input> onInput receives the string value directly, not a DOM event;
-          cast to any because @types/react types this as a standard HTML element */}
+      <text>▶</text>
       {React.createElement("input", { value, focused: true, onInput: onChange, maxLength: 256 })}
       {invalid ? <text>⚠ {invalid}</text> : null}
     </box>
