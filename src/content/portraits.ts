@@ -7,4 +7,8 @@ export const portraits: Record<string, string[]> = {
   worderly:   ["  {abc}  ", "  /a a\\  ", "  \\___/  "],
   spaceblob:  ["  ~~~~~  ", "  ' '    ", "         "],
   rangewolf:  ["  /a-z\\  ", " (•   •) ", "  \\___/  "],
+  starfist:   ["  *_*    ", " /***\\   ", "  v v    "],
+  pluson:     ["  +++    ", " (^_^)   ", "  \\_/    "],
+  questling:  ["  ?_?    ", " /. .\\   ", "  \\?/    "],
+  bracetron:  ["  {n,m}  ", "  /OO\\   ", "  \\__/   "],
 };
