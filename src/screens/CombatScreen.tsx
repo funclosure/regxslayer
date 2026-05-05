@@ -20,15 +20,35 @@ export type CombatScreenProps = {
   onTraitEvent?: (e: TraitEvent) => void;
 };
 
+const SLAIN_COLOR = "#ff6b6b";
+const ATTR_BOLD = 1 << 0;
+
+function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
+  const banner = React.createElement(
+    "span",
+    { style: { fg: SLAIN_COLOR, attributes: ATTR_BOLD } },
+    "✦ ✦ ✦  SLAIN  ✦ ✦ ✦",
+  );
+  return (
+    <box flexDirection="column" gap={1} padding={1}>
+      <text>{banner}</text>
+      <text>killed by:  {pattern}</text>
+    </box>
+  );
+}
+
 export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const { chapter, monster, mode, onKill, onFlee, onTraitEvent } = props;
   const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
+  // Hold the kill scene for ~1.2s before transitioning. This gives the player
+  // a moment to register the slaying animation (the killing regex stays visible,
+  // the heart line shows green-underlined, a SLAIN banner replaces the input).
   useEffect(() => {
-    if (engine.state.phase.kind === "kill") {
-      onKill(engine.state.bestRegexes);
-    }
+    if (engine.state.phase.kind !== "kill") return;
+    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 1200);
+    return () => clearTimeout(timer);
   }, [engine.state.phase, engine.state.bestRegexes, onKill]);
 
   useKeyboard((e: KeyEvent) => {
@@ -106,7 +126,9 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
           matchedKeys={engine.evalResult?.matchedLineKeys ?? new Set<string>()}
           matchedRanges={engine.evalResult?.matchedRanges}
         />
-        {hintOpen ? (
+        {engine.state.phase.kind === "kill" ? (
+          <SlainBanner pattern={engine.state.bestRegexes["heart"]?.pattern ?? engine.pattern} />
+        ) : hintOpen ? (
           <HintOverlay title={chapter.title} lines={chapter.cheatsheet} />
         ) : (
           <>
