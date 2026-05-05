@@ -15,4 +15,6 @@ export const portraits: Record<string, string[]> = {
   lump:       [" .-----.", " (  ^^ )", "  '---' "],
   pip:        ["  ::: ", " ('o') ", "  \"-\"  "],
   bop:        [" /\\_/\\ ", "( o.o )", "  > <  "],
+  // wild
+  dotgrim:    ["  ....  ", " /. .\\ ", "  \\.|.   "],
 };
