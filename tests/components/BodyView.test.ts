@@ -9,30 +9,30 @@ const base = {
 };
 
 describe("formatBodyRow — layer rows", () => {
-  test("active vital line: ♦ gutter, plain text, not matched", () => {
+  test("active vital line: ♦ gutter, plain text, not matched, not stripped", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 0, text: "alpha", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: "♦", prefix: "", text: "alpha", matched: false, matchKind: "vital" });
+    expect(r).toEqual({ gutter: "♦", text: "alpha", matched: false, matchKind: "vital", stripped: false });
   });
   test("active filler line: blank gutter", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 1, text: "noise", vital: false, ...base,
     });
-    expect(r).toEqual({ gutter: " ", prefix: "", text: "noise", matched: false, matchKind: "collateral" });
+    expect(r).toEqual({ gutter: " ", text: "noise", matched: false, matchKind: "collateral", stripped: false });
   });
   test("locked layer rows: ⛓ gutter, collateral if matched", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 1, lineIdx: 0, text: "gamma", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: "⛓", prefix: "", text: "gamma", matched: false, matchKind: "collateral" });
+    expect(r).toEqual({ gutter: "⛓", text: "gamma", matched: false, matchKind: "collateral", stripped: false });
   });
-  test("stripped layer rows: [STRIPPED] prefix and blank gutter", () => {
+  test("stripped layer rows: stripped flag set, blank gutter, no [STRIPPED] prefix", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 0, text: "alpha", vital: true,
       ...base, stripped: new Set([0]), activeLayerIdx: 1,
     });
-    expect(r).toEqual({ gutter: " ", prefix: "[STRIPPED] ", text: "alpha", matched: false, matchKind: "collateral" });
+    expect(r).toEqual({ gutter: " ", text: "alpha", matched: false, matchKind: "collateral", stripped: true });
   });
   test("active vital line, matched: matched=true, matchKind=vital, text unchanged (no jitter brackets)", () => {
     const r = formatBodyRow({
@@ -66,14 +66,14 @@ describe("formatBodyRow — heart row", () => {
     const r = formatBodyRow({
       kind: "heart", layerIdx: -1, lineIdx: -1, text: "HEART", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: " ", prefix: "", text: "HEART", matched: false, matchKind: "collateral" });
+    expect(r).toEqual({ gutter: " ", text: "HEART", matched: false, matchKind: "collateral", stripped: false });
   });
   test("in heart phase: ♦ gutter, vital matchKind", () => {
     const r = formatBodyRow({
       kind: "heart", layerIdx: -1, lineIdx: -1, text: "HEART", vital: true,
       ...base, inHeart: true,
     });
-    expect(r).toEqual({ gutter: "♦", prefix: "", text: "HEART", matched: false, matchKind: "vital" });
+    expect(r).toEqual({ gutter: "♦", text: "HEART", matched: false, matchKind: "vital", stripped: false });
   });
   test("matched heart in heart phase: text unchanged, matched=true, matchKind=vital", () => {
     const r = formatBodyRow({

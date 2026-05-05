@@ -36,7 +36,10 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
       engine.dismissIntro();
       return;
     }
-    if (e.name === "?") {
+    // F1 toggles the cheatsheet. We intentionally do NOT bind "?" because
+    // "?" is a regex quantifier and the player must be able to type it into
+    // the input.
+    if (e.name === "f1") {
       setHintOpen((v) => !v);
       e.preventDefault();
       return;

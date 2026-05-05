@@ -13,13 +13,14 @@ export type BodyViewProps = {
 
 export type BodyRow = {
   gutter: string;
-  prefix: string;
   /** The line text without any decoration. */
   text: string;
   /** True when the player's regex matches this line. */
   matched: boolean;
   /** Whether this line is "good to match" vs collateral. */
   matchKind: "vital" | "collateral";
+  /** True when this row's layer has been stripped — renders dim + strikethrough. */
+  stripped: boolean;
 };
 
 /** Pure formatter for one body row, exported for testing.
@@ -41,10 +42,10 @@ export function formatBodyRow(args: {
     const matched = matchedKeys.has("heart");
     return {
       gutter: inHeart ? "♦" : " ",
-      prefix: "",
       text,
       matched,
       matchKind: inHeart ? "vital" : "collateral",
+      stripped: false,
     };
   }
 
@@ -62,10 +63,10 @@ export function formatBodyRow(args: {
   const matchKind: BodyRow["matchKind"] = (isActive && vital) ? "vital" : "collateral";
   return {
     gutter,
-    prefix: isStripped ? "[STRIPPED] " : "",
     text,
     matched,
     matchKind,
+    stripped: isStripped,
   };
 }
 
@@ -74,7 +75,6 @@ export function formatBodyRow(args: {
 export type Segment = { text: string; matched: boolean };
 export function splitByRanges(text: string, ranges: ReadonlyArray<MatchRange>): Segment[] {
   if (ranges.length === 0) return [{ text, matched: false }];
-  // Sort + merge overlapping (matchAll shouldn't produce overlaps, but be defensive).
   const sorted = [...ranges].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   const merged: Array<[number, number]> = [];
   for (const [s, e] of sorted) {
@@ -96,9 +96,12 @@ export function splitByRanges(text: string, ranges: ReadonlyArray<MatchRange>): 
   return out;
 }
 
-const VITAL_HIT_COLOR = "#4dffaa";        // green — good
-const COLLATERAL_HIT_COLOR = "#ff6b6b";   // red — bad
-const ATTR_UNDERLINE = 1 << 3;            // gridland TextAttributes.UNDERLINE
+const VITAL_HIT_COLOR = "#4dffaa";              // green — good
+const COLLATERAL_HIT_COLOR = "#ff6b6b";         // red — bad
+const ATTR_UNDERLINE = 1 << 3;                  // gridland TextAttributes.UNDERLINE
+const ATTR_DIM = 1 << 1;                        // gridland TextAttributes.DIM
+const ATTR_STRIKETHROUGH = 1 << 7;              // gridland TextAttributes.STRIKETHROUGH
+const ATTR_STRIPPED = ATTR_DIM | ATTR_STRIKETHROUGH;
 
 export function BodyView(props: BodyViewProps): React.ReactElement {
   const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys, matchedRanges } = props;
@@ -106,27 +109,40 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
   const ranges = matchedRanges ?? new Map<string, ReadonlyArray<MatchRange>>();
 
   const renderRow = (key: string | number, lineKey: string, row: BodyRow): React.ReactElement => {
+    // Stripped rows: dim + strikethrough on the whole line, ignore match colors.
+    if (row.stripped) {
+      const stripped = React.createElement(
+        "span",
+        { style: { attributes: ATTR_STRIPPED } },
+        row.text,
+      );
+      return (
+        <text key={key}>
+          {row.gutter} {stripped}
+        </text>
+      );
+    }
+
     const fg = row.matchKind === "vital" ? VITAL_HIT_COLOR : COLLATERAL_HIT_COLOR;
     const lineRanges = row.matched ? (ranges.get(lineKey) ?? []) : [];
-    // If matched but no underlineable substring (e.g. ^/$ anchor), color the
-    // whole line in fg without underline — the match still happened.
+
+    // Matched but no substring (e.g. ^/$ anchor): color whole line.
     if (row.matched && lineRanges.length === 0) {
       const colored = React.createElement("span", { style: { fg } }, row.text);
       return (
         <text key={key}>
-          {row.gutter} {row.prefix}{colored}
+          {row.gutter} {colored}
         </text>
       );
     }
     if (!row.matched) {
       return (
         <text key={key}>
-          {row.gutter} {row.prefix}{row.text}
+          {row.gutter} {row.text}
         </text>
       );
     }
-    // Substring highlight: split into segments, render the matched ones with
-    // fg + UNDERLINE attribute (underline keeps the visual cue colorblind-safe).
+    // Substring highlight: matched chars get fg + UNDERLINE.
     const segments = splitByRanges(row.text, lineRanges);
     const children = segments.map((seg, idx) =>
       seg.matched
@@ -135,7 +151,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
     );
     return (
       <text key={key}>
-        {row.gutter} {row.prefix}{children}
+        {row.gutter} {children}
       </text>
     );
   };
