@@ -8,19 +8,21 @@ import { HpBar } from "@/components/HpBar";
 import { LayerRoadmap } from "@/components/LayerRoadmap";
 import { MonsterPortrait } from "@/components/MonsterPortrait";
 import { RegexInput } from "@/components/RegexInput";
-import { useCombatEngine } from "@/components/hooks/useCombatEngine";
-import type { Chapter, Monster, BestRegex } from "@/game/types";
+import { useCombatEngine, type TraitEvent } from "@/components/hooks/useCombatEngine";
+import type { Chapter, Monster, BestRegex, SaveMode } from "@/game/types";
 
 export type CombatScreenProps = {
   chapter: Chapter;
   monster: Monster;
+  mode: SaveMode;
   onKill: (bestRegexes: Record<string, BestRegex>) => void;
   onFlee: () => void;
+  onTraitEvent?: (e: TraitEvent) => void;
 };
 
 export function CombatScreen(props: CombatScreenProps): React.ReactElement {
-  const { chapter, monster, onKill, onFlee } = props;
-  const engine = useCombatEngine({ monster });
+  const { chapter, monster, mode, onKill, onFlee, onTraitEvent } = props;
+  const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
   useEffect(() => {
@@ -55,12 +57,19 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
     engine.state.phase.kind === "strip"        ? engine.state.phase.layerIdx :
     Math.max(0, totalLayers - 1);
 
+  const isTutorial = mode === "tutorial";
+  const layerCoaching =
+    isTutorial && engine.state.phase.kind === "layerActive"
+      ? monster.layers[engine.state.phase.layerIdx]?.coaching
+      : undefined;
+
   if (engine.state.phase.kind === "intro") {
     return (
       <box flexDirection="column" padding={2} gap={1} alignItems="center">
         <MonsterPortrait name={monster.portrait} />
         <text>{monster.name}</text>
         <text>{monster.flavor}</text>
+        {isTutorial && monster.coaching ? <text>{monster.coaching}</text> : null}
         <text>[⏎] begin</text>
       </box>
     );
@@ -82,6 +91,7 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
         <ControlsHint />
       </box>
       <box flexDirection="column" flexGrow={1} padding={1} gap={1}>
+        {layerCoaching ? <text>→ {layerCoaching}</text> : null}
         <BodyView
           monster={monster}
           activeLayerIdx={activeIdx}
