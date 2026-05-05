@@ -16,10 +16,13 @@ export const chapter: Chapter = {
       id: "digiton",
       name: "Digiton",
       portrait: "digiton",
+      pool: "story",
       flavor: "Made entirely of digits. Ironic, isn't it.",
+      traits: ["CHAR_CLASS_DIGIT", "QUANT_PLUS", "QUANT_EXACT"],
       layers: [
         {
           topic: "digits only",
+          traits: ["CHAR_CLASS_DIGIT", "QUANT_PLUS"],
           lines: [
             { text: "404",         vital: true  },
             { text: "200",         vital: true  },
@@ -30,6 +33,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "longer digit runs",
+          traits: ["CHAR_CLASS_DIGIT", "QUANT_EXACT"],
           lines: [
             { text: "8675309",     vital: true  },
             { text: "1024",        vital: true  },
@@ -44,10 +48,13 @@ export const chapter: Chapter = {
       id: "worderly",
       name: "Worderly",
       portrait: "worderly",
+      pool: "story",
       flavor: "Fond of underscores. Probably writes Python.",
+      traits: ["CHAR_CLASS_WORD", "QUANT_PLUS"],
       layers: [
         {
           topic: "word chars",
+          traits: ["CHAR_CLASS_WORD", "QUANT_PLUS"],
           lines: [
             { text: "snake_case",  vital: true  },
             { text: "camelCase",   vital: true  },
@@ -58,6 +65,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "non-word chars",
+          traits: ["CHAR_CLASS_WORD", "QUANT_PLUS"],
           lines: [
             { text: "@#!$",        vital: true  },
             { text: "...",         vital: true  },
@@ -72,10 +80,13 @@ export const chapter: Chapter = {
       id: "spaceblob",
       name: "Spaceblob",
       portrait: "spaceblob",
+      pool: "story",
       flavor: "Soft, breathy, full of nothing.",
+      traits: ["CHAR_CLASS_SPACE", "ANCHOR_START", "QUANT_PLUS"],
       layers: [
         {
           topic: "leading whitespace",
+          traits: ["CHAR_CLASS_SPACE", "ANCHOR_START"],
           lines: [
             { text: "    indented",      vital: true  },
             { text: "\tindented",        vital: true  },
@@ -85,6 +96,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "non-whitespace runs",
+          traits: ["CHAR_CLASS_SPACE", "QUANT_PLUS"],
           lines: [
             { text: "abc",               vital: true  },
             { text: "xyz123",            vital: true  },
@@ -99,10 +111,13 @@ export const chapter: Chapter = {
       id: "rangewolf",
       name: "Rangewolf",
       portrait: "rangewolf",
+      pool: "story",
       flavor: "Hunts in lowercase territory.",
+      traits: ["CHAR_CLASS_RANGE", "CHAR_CLASS_SET", "QUANT_PLUS"],
       layers: [
         {
           topic: "lowercase only",
+          traits: ["CHAR_CLASS_RANGE", "QUANT_PLUS"],
           lines: [
             { text: "lowercase",       vital: true  },
             { text: "another",         vital: true  },
@@ -113,6 +128,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "negated set",
+          traits: ["CHAR_CLASS_SET", "QUANT_PLUS"],
           lines: [
             { text: "alpha",           vital: true  },
             { text: "beta",            vital: true  },

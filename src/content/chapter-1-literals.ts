@@ -17,10 +17,13 @@ export const chapter: Chapter = {
       id: "scribblet",
       name: "Scribblet the Inkblot",
       portrait: "scribblet",
+      pool: "story",
       flavor: "Type a regex below. Press [?] for help, [esc] to flee. Keys are live — every keystroke counts.",
+      traits: ["LITERAL", "ANCHOR_START", "ANCHOR_END"],
       layers: [
         {
           topic: "exact words",
+          traits: ["LITERAL", "ANCHOR_START", "ANCHOR_END"],
           lines: [
             { text: "hello",        vital: true  },
             { text: "world",        vital: true  },
@@ -35,10 +38,13 @@ export const chapter: Chapter = {
       id: "caretling",
       name: "Caretling",
       portrait: "caretling",
+      pool: "story",
       flavor: "Loves pretending it owns the start of every line.",
+      traits: ["LITERAL", "ANCHOR_START", "ANCHOR_END"],
       layers: [
         {
           topic: "anchored start",
+          traits: ["ANCHOR_START", "LITERAL"],
           lines: [
             { text: "alpha",       vital: true  },
             { text: "alphabet",    vital: false },
@@ -48,6 +54,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "anchored end",
+          traits: ["ANCHOR_END", "LITERAL"],
           lines: [
             { text: "running",     vital: true  },
             { text: "swimming",    vital: true  },
@@ -62,10 +69,13 @@ export const chapter: Chapter = {
       id: "pinmeister",
       name: "Pinmeister",
       portrait: "pinmeister",
+      pool: "story",
       flavor: "Demands you pin it exactly.",
+      traits: ["LITERAL", "ANCHOR_START", "ANCHOR_END", "ALTERNATION"],
       layers: [
         {
           topic: "exact lines",
+          traits: ["ANCHOR_START", "ANCHOR_END", "LITERAL", "ALTERNATION"],
           lines: [
             { text: "ok",          vital: true  },
             { text: "go",          vital: true  },
@@ -76,6 +86,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "exact lines harder",
+          traits: ["ANCHOR_START", "ANCHOR_END", "LITERAL", "ALTERNATION"],
           lines: [
             { text: "north",       vital: true  },
             { text: "south",       vital: true  },
@@ -90,10 +101,13 @@ export const chapter: Chapter = {
       id: "alternaut",
       name: "Alternaut",
       portrait: "alternaut",
+      pool: "story",
       flavor: "Splits in two — match either half cleanly.",
+      traits: ["LITERAL", "ALTERNATION", "GROUP"],
       layers: [
         {
           topic: "alternation",
+          traits: ["ALTERNATION", "LITERAL"],
           lines: [
             { text: "cat",         vital: true  },
             { text: "dog",         vital: true  },
@@ -104,6 +118,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "grouped alternation",
+          traits: ["ALTERNATION", "GROUP", "LITERAL"],
           lines: [
             { text: "v1",          vital: true  },
             { text: "v2",          vital: true  },

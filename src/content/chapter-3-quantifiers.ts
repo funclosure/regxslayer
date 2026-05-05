@@ -17,10 +17,13 @@ export const chapter: Chapter = {
       id: "starfist",
       name: "Starfist",
       portrait: "starfist",
+      pool: "story",
       flavor: "Hits with zero or more punches.",
+      traits: ["QUANT_STAR", "LITERAL"],
       layers: [
         {
           topic: "zero-or-more",
+          traits: ["QUANT_STAR", "LITERAL"],
           lines: [
             { text: "ab",          vital: true  },
             { text: "aab",         vital: true  },
@@ -36,10 +39,13 @@ export const chapter: Chapter = {
       id: "pluson",
       name: "Pluson",
       portrait: "pluson",
+      pool: "story",
       flavor: "Demands at least one of you.",
+      traits: ["QUANT_PLUS", "CHAR_CLASS_DIGIT", "LITERAL"],
       layers: [
         {
           topic: "one-or-more",
+          traits: ["QUANT_PLUS", "CHAR_CLASS_DIGIT"],
           lines: [
             { text: "9",           vital: true  },
             { text: "42",          vital: true  },
@@ -50,6 +56,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "longer runs",
+          traits: ["QUANT_PLUS", "LITERAL"],
           lines: [
             { text: "aaaaa",       vital: true  },
             { text: "aaa",         vital: true  },
@@ -64,10 +71,13 @@ export const chapter: Chapter = {
       id: "questling",
       name: "Questling",
       portrait: "questling",
+      pool: "story",
       flavor: "Optional, but oh so important.",
+      traits: ["QUANT_OPTIONAL", "LITERAL", "GROUP"],
       layers: [
         {
           topic: "zero-or-one",
+          traits: ["QUANT_OPTIONAL", "LITERAL"],
           lines: [
             { text: "color",       vital: true  },
             { text: "colour",      vital: true  },
@@ -77,6 +87,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "optional groups",
+          traits: ["QUANT_OPTIONAL", "GROUP", "LITERAL"],
           lines: [
             { text: "http",        vital: true  },
             { text: "https",       vital: true  },
@@ -91,10 +102,13 @@ export const chapter: Chapter = {
       id: "bracetron",
       name: "Bracetron",
       portrait: "bracetron",
+      pool: "story",
       flavor: "Counts. Precisely. Don't be off by one.",
+      traits: ["QUANT_EXACT", "CHAR_CLASS_WORD", "LITERAL"],
       layers: [
         {
           topic: "exact counts",
+          traits: ["QUANT_EXACT", "CHAR_CLASS_WORD"],
           lines: [
             { text: "abc",         vital: true  },
             { text: "xyz",         vital: true  },
@@ -105,6 +119,7 @@ export const chapter: Chapter = {
         },
         {
           topic: "ranged counts",
+          traits: ["QUANT_EXACT", "LITERAL"],
           lines: [
             { text: "aaa",         vital: true  },
             { text: "aaaa",        vital: true  },
