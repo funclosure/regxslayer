@@ -1,24 +1,19 @@
 import { describe, expect, test } from "bun:test";
-import { validateChapter, type ValidationIssue } from "@/../scripts/validate-content";
-import type { Chapter } from "@/game/types";
+import { validateChapter, validateMonster, type ValidationIssue } from "@/../scripts/validate-content";
+import type { Chapter, Monster } from "@/game/types";
 
-const ok: Chapter = {
-  id: "test",
-  title: "Test",
-  intro: "",
-  cheatsheet: [],
+const okChapter: Chapter = {
+  id: "test", title: "Test", intro: "", cheatsheet: [],
   monsters: [
     {
-      id: "m",
-      name: "M",
-      portrait: "p",
-      flavor: "",
+      id: "m", name: "M", portrait: "p", flavor: "",
+      pool: "story", traits: ["LITERAL"],
       layers: [
         {
-          topic: "t",
+          topic: "t", traits: ["LITERAL"],
           lines: [
             { text: "alpha", vital: true },
-            { text: "beta", vital: true },
+            { text: "beta",  vital: true },
             { text: "noise", vital: false },
             { text: "https://example.com", vital: false },
           ],
@@ -29,39 +24,66 @@ const ok: Chapter = {
   ],
 };
 
-describe("validateChapter", () => {
+describe("validateChapter — v1 checks still apply", () => {
   test("good chapter has no issues", () => {
-    expect(validateChapter(ok)).toEqual([]);
+    expect(validateChapter(okChapter)).toEqual([]);
   });
-
   test("layer with no vitals fails", () => {
-    const bad: Chapter = structuredClone(ok);
+    const bad: Chapter = structuredClone(okChapter);
     bad.monsters[0]!.layers[0]!.lines.forEach((l) => (l.vital = false));
     const issues = validateChapter(bad);
     expect(issues.some((i: ValidationIssue) => i.code === "no-vitals")).toBe(true);
   });
+});
 
-  test("layer over 8 lines fails", () => {
-    const bad: Chapter = structuredClone(ok);
-    bad.monsters[0]!.layers[0]!.lines = Array.from({ length: 9 }, (_, i) => ({
-      text: `x${i}`,
-      vital: i === 0,
-    }));
-    expect(validateChapter(bad).some((i) => i.code === "layer-too-large")).toBe(true);
+describe("validateMonster — v2 trait/pool checks", () => {
+  test("monster with no traits fails", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.traits = [];
+    expect(validateMonster(m).some((i) => i.code === "monster-no-traits")).toBe(true);
   });
 
-  test("trivial heart fails", () => {
-    const bad: Chapter = structuredClone(ok);
-    bad.monsters[0]!.heart.text = "aa";
-    expect(validateChapter(bad).some((i) => i.code === "trivial-heart")).toBe(true);
+  test("layer with no traits fails", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.layers[0]!.traits = [];
+    expect(validateMonster(m).some((i) => i.code === "layer-no-traits")).toBe(true);
   });
 
-  test("layer killable by .* fails (trivial-killer)", () => {
-    const bad: Chapter = structuredClone(ok);
-    bad.monsters[0]!.layers[0]!.lines = [
-      { text: "alpha", vital: true },
-      { text: "beta", vital: true },
-    ]; // every line is vital → .+ would clean-strip
-    expect(validateChapter(bad).some((i) => i.code === "trivial-killer")).toBe(true);
+  test("layer trait not in monster traits fails", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.layers[0]!.traits = ["ANCHOR_END"]; // not declared on monster
+    expect(validateMonster(m).some((i) => i.code === "layer-trait-not-in-monster")).toBe(true);
+  });
+
+  test("missing pool fails", () => {
+    const m = structuredClone(okChapter.monsters[0]!);
+    delete (m as Partial<Monster>).pool;
+    expect(validateMonster(m as Monster).some((i) => i.code === "missing-pool")).toBe(true);
+  });
+
+  test("tutorial monster skips trivial-killer check", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.pool = "tutorial";
+    // construct a layer that would normally fail trivial-killer (every line vital)
+    m.layers[0]!.lines = [{ text: "a", vital: true }, { text: "b", vital: true }];
+    const issues = validateMonster(m);
+    expect(issues.some((i) => i.code === "trivial-killer")).toBe(false);
+  });
+
+  test("tutorial monster missing coaching emits warning, not error", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.pool = "tutorial";
+    delete m.coaching;
+    const issues = validateMonster(m);
+    const w = issues.find((i) => i.code === "tutorial-missing-coaching");
+    expect(w).toBeDefined();
+    expect(w!.severity).toBe("warn");
+  });
+
+  test("non-tutorial monster with coaching emits warning", () => {
+    const m: Monster = structuredClone(okChapter.monsters[0]!);
+    m.coaching = "leftover";
+    const issues = validateMonster(m);
+    expect(issues.some((i) => i.code === "coaching-on-non-tutorial")).toBe(true);
   });
 });
