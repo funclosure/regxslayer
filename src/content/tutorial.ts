@@ -13,12 +13,19 @@ export const tutorialMonsters: Monster[] = [
       {
         topic: "exact words",
         traits: ["LITERAL"],
-        coaching: "Try typing: hello — your regex must match the vital and miss the others.",
+        coaching: "Try typing: hello — your regex must match only the ♦ line.",
+        // Each filler line shares a different substring with "hello" so naive
+        // shortcuts over-match:
+        //   helmet → blocks "he", "hel", "el"
+        //   shell  → blocks "hell", "ell", "ll"
+        //   bellow → blocks "ello", "llo", "lo"
+        // The full word "hello" is the only literal substring unique to the vital.
         lines: [
-          { text: "hello",    vital: true  },
-          { text: "helmet",   vital: false },
-          { text: "goodbye",  vital: false },
-          { text: "say hi",   vital: false },
+          { text: "hello",   vital: true  },
+          { text: "helmet",  vital: false },
+          { text: "shell",   vital: false },
+          { text: "bellow",  vital: false },
+          { text: "say hi",  vital: false },
         ],
       },
       {
