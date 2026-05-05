@@ -93,9 +93,9 @@ function shimmerSpans(text: string, pos: number, peakColor: string): React.React
 }
 
 function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
-  // Matches the kill-phase timeout in the parent useEffect (2000ms).
+  // Matches the kill-phase timeout in the parent useEffect (2500ms).
   const text = "✦ ✦ ✦  SLAIN  ✦ ✦ ✦";
-  const { pos, opacity } = useShimmer(2000, text.length);
+  const { pos, opacity } = useShimmer(2500, text.length);
   return (
     <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
       <text>{shimmerSpans(text, pos, SLAIN_COLOR)}</text>
@@ -105,9 +105,9 @@ function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
 }
 
 function LayerStrippedBanner({ topic, pattern }: { topic: string; pattern: string }): React.ReactElement {
-  // Matches stripDelayMs default in useCombatEngine (1500ms).
+  // Matches stripDelayMs default in useCombatEngine (2500ms).
   const text = `✓  LAYER STRIPPED — ${topic}`;
-  const { pos, opacity } = useShimmer(1500, text.length);
+  const { pos, opacity } = useShimmer(2500, text.length);
   return (
     <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
       <text>{shimmerSpans(text, pos, STRIPPED_COLOR)}</text>
@@ -121,11 +121,11 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
-  // Hold the kill scene for ~2s before transitioning — the SLAIN moment
-  // should feel weightier than a per-layer strip (which is 1.5s).
+  // Hold the kill scene for 2.5s before transitioning, matching the per-layer
+  // strip duration so banner pacing feels consistent.
   useEffect(() => {
     if (engine.state.phase.kind !== "kill") return;
-    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 2000);
+    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 2500);
     return () => clearTimeout(timer);
   }, [engine.state.phase, engine.state.bestRegexes, onKill]);
 
