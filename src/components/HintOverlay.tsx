@@ -18,7 +18,7 @@ export function HintOverlay({ title, lines }: HintOverlayProps): React.ReactElem
       {lines.map((l, i) => (
         <text key={i}>{l}</text>
       ))}
-      <text>[F1] or [esc] to close</text>
+      <text>[tab] or [esc] to close</text>
     </box>
   );
 }

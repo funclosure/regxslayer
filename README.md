@@ -36,7 +36,7 @@ bun run build
 
 - Type to write your regex. Highlights and damage update on every keystroke.
 - A layer auto-strips when your regex matches **only** its vital lines.
-- `F1` — toggle hint cheatsheet for the current chapter (we use F1 instead of `?` so you can still type `?` into your regex)
+- `tab` — toggle hint cheatsheet for the current chapter (tab never appears in a regex pattern, so it doesn't collide with what you might type)
 - `esc` — flee combat (back to mode-specific select) or close hints
 - `↑`/`↓`/`⏎` — navigate menus
 - `Ctrl-C` — quit
