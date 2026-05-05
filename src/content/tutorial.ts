@@ -15,9 +15,9 @@ export const tutorialMonsters: Monster[] = [
         traits: ["LITERAL"],
         coaching: "Try typing: hello",
         lines: [
-          { text: "hello",   vital: true  },
-          { text: "say hi",  vital: false },
-          { text: "hellos",  vital: false },
+          { text: "hello",    vital: true  },
+          { text: "goodbye",  vital: false },
+          { text: "say hi",   vital: false },
         ],
       },
       {
