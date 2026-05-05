@@ -21,6 +21,7 @@ export type CombatScreenProps = {
 };
 
 const SLAIN_COLOR = "#ff6b6b";
+const STRIPPED_COLOR = "#4dffaa";
 const ATTR_BOLD = 1 << 0;
 
 function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
@@ -33,6 +34,20 @@ function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
     <box flexDirection="column" gap={1} padding={1}>
       <text>{banner}</text>
       <text>killed by:  {pattern}</text>
+    </box>
+  );
+}
+
+function LayerStrippedBanner({ topic, pattern }: { topic: string; pattern: string }): React.ReactElement {
+  const banner = React.createElement(
+    "span",
+    { style: { fg: STRIPPED_COLOR, attributes: ATTR_BOLD } },
+    `✓  LAYER STRIPPED — ${topic}`,
+  );
+  return (
+    <box flexDirection="column" gap={1} padding={1}>
+      <text>{banner}</text>
+      <text>matched by:  {pattern}</text>
     </box>
   );
 }
@@ -128,6 +143,11 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
         />
         {engine.state.phase.kind === "kill" ? (
           <SlainBanner pattern={engine.state.bestRegexes["heart"]?.pattern ?? engine.pattern} />
+        ) : engine.state.phase.kind === "strip" ? (
+          <LayerStrippedBanner
+            topic={monster.layers[engine.state.phase.layerIdx]?.topic ?? ""}
+            pattern={engine.state.bestRegexes[String(engine.state.phase.layerIdx)]?.pattern ?? engine.pattern}
+          />
         ) : hintOpen ? (
           <HintOverlay title={chapter.title} lines={chapter.cheatsheet} />
         ) : (

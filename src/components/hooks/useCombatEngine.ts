@@ -26,7 +26,7 @@ export type UseCombatEngineOpts = {
 };
 
 export function useCombatEngine(opts: UseCombatEngineOpts): CombatEngine {
-  const stripDelayMs = opts.stripDelayMs ?? 400;
+  const stripDelayMs = opts.stripDelayMs ?? 800;
 
   const [state, setState] = useState<CombatState>(() => initialState(opts.monster));
   const [pattern, setPattern] = useState("");
