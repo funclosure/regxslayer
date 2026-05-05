@@ -57,12 +57,11 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
-  // Hold the kill scene for ~1.2s before transitioning. This gives the player
-  // a moment to register the slaying animation (the killing regex stays visible,
-  // the heart line shows green-underlined, a SLAIN banner replaces the input).
+  // Hold the kill scene for ~2s before transitioning — the SLAIN moment
+  // should feel weightier than a per-layer strip (which is 1.5s).
   useEffect(() => {
     if (engine.state.phase.kind !== "kill") return;
-    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 1200);
+    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 2000);
     return () => clearTimeout(timer);
   }, [engine.state.phase, engine.state.bestRegexes, onKill]);
 
