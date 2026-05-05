@@ -36,8 +36,10 @@ Content lives in `src/content/`:
 
 The trait vocabulary is in `src/game/traits.ts`. The structural validator
 (`scripts/validate-content.ts`) catches missing fields and a small set of
-trivial-killer regex (`.*`, `.+`, `\w+`, `\S+`). It does **not** catch
-design-integrity issues — that's what you're doing.
+trivial-killer regex (`.*`, `.+`, `\w+`, `\S+`) against active layer lines for
+non-tutorial monsters. It does **not** catch locked-layer leaks, heart
+contamination, tutorial prefix leaks, or broader design-integrity issues —
+that's what you're doing.
 
 ### What to audit, per layer
 
@@ -80,14 +82,23 @@ For each layer in scope, compute:
    doesn't strip even though everything else is right. Common offenders:
    `^\w+$` matching pure-word-char hearts, `\d+` matching numeric hearts.
 
+5. **Suggested-regex prefix safety** (tutorial layers only). Tutorial coaching
+   is typed live, so every prefix of the suggested regex matters. For each
+   coaching string that says "Try ...", test every typed prefix before the
+   complete suggested regex. No prefix should clean-strip the layer. If an
+   early prefix strips, the tutorial can auto-advance before the player types
+   the feature being taught (for example, before a final `$`, `+`, or escaped
+   character).
+
 ### What to audit, per heart
 
 The heart is killed by a regex that **fully matches** the heart text (the
 match range must cover `[0, heart.text.length)`). For each monster:
 
 1. **Canonical kill regex.** Usually `^<heart>$` works, but verify nothing
-   in the body (stripped or not) also fully matches the same regex
-   (improbable, but worth checking when the heart is short or pattern-like).
+   in the body (stripped or not) matches the same regex at all, even as a
+   substring. In heart phase, the heart must be fully matched, but any body
+   line match still counts as collateral.
 
 2. **Length / specificity.** Hearts ≤ 3 chars or with all-same characters
    are blocked by the validator. But heart strings with very common shapes
@@ -155,14 +166,16 @@ Review the following monsters. Adjust this list when invoking the prompt.
 - v1 plan is at `docs/superpowers/plans/2026-05-04-regxslayer-v1.md`,
   v2 at `docs/superpowers/plans/2026-05-04-regxslayer-v2.md`. The plans
   reference the spec but the spec is the source of truth.
-- Known content issues already discovered during play (do not re-flag,
-  but do propose fixes if reviewing the relevant monster):
+- Known content issues already discovered during play (include them in the
+  relevant monster report as "known", and still propose/check fixes):
   - `bracetron` layer 0 (`{3}` exact counts) leaks because layer 1 has
     `aaa` (3 chars) so `^[a-z]{3}$` over-matches the locked layer.
   - `spaceblob` layer 1 (`\S+` non-whitespace runs) leaks because the
     heart `VOID_TOKEN` is itself all non-whitespace.
   - `dotgrim` layer 0 (`\.` literal dots) is single-char vulnerable —
     `[1]` strips because the vitals share digit `1` and no other line has it.
+  - `tut-pip` layer 0 (digits, coaching `^\d+$`) can strip at prefix `^\d`,
+    before the player types `+` or `$`.
   - `tut-pip` layer 1 (word chars, coaching `^\w+$`) — `flush` filler is
     pure word chars and the heart `TUT_PIP_HEART` is also pure word chars,
     so `^\w+$` over-matches.

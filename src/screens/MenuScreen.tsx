@@ -24,6 +24,42 @@ export function navigateMenu(itemCount: number, currentIdx: number, direction: "
     : (currentIdx + itemCount - 1) % itemCount;
 }
 
+const LANDING_ART = [
+  " ____  _____ ____ __  __ ____  _      _ __   _______ ____",
+  "|  _ \\| ____/ ___|\\ \\/ / ___|| |    / \\\\ \\ / / ____|  _ \\",
+  "| |_) |  _|| |  _  \\  /\\___ \\| |   / _ \\\\ V /|  _| | |_) |",
+  "|  _ <| |__| |_| | /  \\ ___) | |__/ ___ \\| | | |___|  _ <",
+  "|_| \\_\\_____\\____|/_/\\_\\____/|____/_/   \\_\\_| |_____|_| \\_\\",
+  "",
+  "          .----.",
+  "      ___/ .  . \\___        [^filler]",
+  "     /   \\  --  /   \\       \\w+",
+  "     \\____\\____/____/       ^heart$",
+  "          /_||_\\",
+  "",
+  "                    precision is damage",
+  "",
+];
+
+const LANDING_WIDTH = Math.max(...LANDING_ART.map((row) => row.length));
+
+function padRows(rows: string[], width: number): string[] {
+  return rows.map((row) => row.padEnd(width, " "));
+}
+
+export function buildMenuRows(items: MenuItem[], selectedIdx: number): string[] {
+  const rows = items.map((it, i) => `${i === selectedIdx ? "▶" : " "} ${it.label}`);
+  const width = Math.max(...rows.map((row) => row.length), 0);
+  return padRows(rows, width);
+}
+
+export function buildLandingRows(items: MenuItem[], selectedIdx: number): string[] {
+  return [
+    ...padRows(LANDING_ART, LANDING_WIDTH),
+    ...buildMenuRows(items, selectedIdx),
+  ];
+}
+
 export type MenuScreenProps = {
   save: SaveFile;
   onSelect: (choice: MenuChoice) => void;
@@ -32,6 +68,9 @@ export type MenuScreenProps = {
 export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElement {
   const items = buildMenuItems(save);
   const [idx, setIdx] = useState(0);
+  const artRows = padRows(LANDING_ART, LANDING_WIDTH);
+  const menuRows = buildMenuRows(items, idx);
+  const menuWidth = Math.max(...menuRows.map((row) => row.length), 0);
 
   useKeyboard((e: KeyEvent) => {
     if (e.name === "up") setIdx((i) => navigateMenu(items.length, i, "up"));
@@ -43,12 +82,17 @@ export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElem
   }, { global: true });
 
   return (
-    <box flexDirection="column" padding={2} gap={1}>
-      <text>regxslayer</text>
-      <text>───────────</text>
-      {items.map((it, i) => (
-        <text key={it.key}>{i === idx ? "▶ " : "  "}{it.label}</text>
-      ))}
+    <box flexDirection="column" flexGrow={1} padding={2} alignItems="center" justifyContent="center">
+      <box flexDirection="column" width={LANDING_WIDTH}>
+        {artRows.map((row, i) => (
+          <text key={`art:${i}:${row}`}>{row}</text>
+        ))}
+      </box>
+      <box flexDirection="column" width={menuWidth}>
+        {menuRows.map((row, i) => (
+          <text key={`menu:${i}:${row}`}>{row}</text>
+        ))}
+      </box>
     </box>
   );
 }

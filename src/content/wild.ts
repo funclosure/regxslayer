@@ -15,7 +15,7 @@ export const wildMonsters: Monster[] = [
         lines: [
           { text: "1.2.3",       vital: true  },
           { text: "v0.1.0",      vital: true  },
-          { text: "abc",         vital: false },
+          { text: "1.fake",      vital: false },
           { text: "no dot here", vital: false },
         ],
       },
@@ -25,7 +25,7 @@ export const wildMonsters: Monster[] = [
         lines: [
           { text: "example.com",       vital: true  },
           { text: "regex.io",          vital: true  },
-          { text: "no_domain",         vital: false },
+          { text: "no_example",        vital: false },
           { text: "https://x.io/path", vital: false },
         ],
       },

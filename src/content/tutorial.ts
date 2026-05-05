@@ -58,7 +58,7 @@ export const tutorialMonsters: Monster[] = [
           { text: "42",     vital: true  },
           { text: "1024",   vital: true  },
           { text: "v3",     vital: false },
-          { text: "ab",     vital: false },
+          { text: "4x",     vital: false },
         ],
       },
       {
@@ -79,12 +79,12 @@ export const tutorialMonsters: Monster[] = [
         lines: [
           { text: "  indented", vital: true  },
           { text: "\ttabbed",    vital: true  },
-          { text: "flush",      vital: false },
+          { text: "edited!",    vital: false },
           { text: "x   ",       vital: false },
         ],
       },
     ],
-    heart: { text: "TUT_PIP_HEART" },
+    heart: { text: "TUT-PIP-HEART" },
   },
   {
     id: "tut-bop",
@@ -114,7 +114,7 @@ export const tutorialMonsters: Monster[] = [
           { text: "a",    vital: true  },
           { text: "aaa",  vital: true  },
           { text: "",     vital: false },
-          { text: "ab",   vital: false },
+          { text: "a b",  vital: false },
         ],
       },
       {

@@ -29,6 +29,7 @@ export const chapter: Chapter = {
             { text: "world",        vital: true  },
             { text: "hello world",  vital: false },
             { text: "say hello",    vital: false },
+            { text: "helloworld",   vital: false },
           ],
         },
       ],
@@ -47,7 +48,7 @@ export const chapter: Chapter = {
           traits: ["ANCHOR_START", "LITERAL"],
           lines: [
             { text: "alpha",       vital: true  },
-            { text: "alphabet",    vital: false },
+            { text: "betaalpha",   vital: false },
             { text: "Italphabet",  vital: false },
             { text: "alpine",      vital: true  },
           ],
@@ -58,7 +59,7 @@ export const chapter: Chapter = {
           lines: [
             { text: "running",     vital: true  },
             { text: "swimming",    vital: true  },
-            { text: "ringing",     vital: false },
+            { text: "ringtone",    vital: false },
             { text: "ingredient",  vital: false },
           ],
         },
