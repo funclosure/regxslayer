@@ -7,9 +7,11 @@ const monster: Monster = {
   name: "Test",
   portrait: "x",
   flavor: "",
+  pool: "wild",
+  traits: ["LITERAL"],
   layers: [
-    { topic: "l1", lines: [{ text: "a", vital: true }] },
-    { topic: "l2", lines: [{ text: "b", vital: true }] },
+    { topic: "l1", traits: ["LITERAL"], lines: [{ text: "a", vital: true }] },
+    { topic: "l2", traits: ["LITERAL"], lines: [{ text: "b", vital: true }] },
   ],
   heart: { text: "H" },
 };

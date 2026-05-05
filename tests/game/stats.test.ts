@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { classify, sortTraits, formatStatsRow } from "@/game/stats";
 import { TRAITS } from "@/game/traits";
 import type { TraitStat } from "@/game/types";
+import type { Trait } from "@/game/traits";
 
 const stat = (p: number, n: number): TraitStat => ({ perfectStrips: p, nonPerfectTries: n });
 
@@ -46,7 +47,7 @@ describe("sortTraits", () => {
     // Every untracked trait counts as "no practice" and floats up alongside ESCAPE,
     // but among the seeded ones, the order within the no-practice block is stable
     // (insertion order from the TRAITS array). Verify pairwise relations instead.
-    const idx = (t: string) => order.indexOf(t);
+    const idx = (t: Trait) => order.indexOf(t);
     expect(idx("ESCAPE")).toBeLessThan(idx("QUANT_OPTIONAL"));      // no-practice before needs
     expect(idx("QUANT_OPTIONAL")).toBeLessThan(idx("QUANT_PLUS"));   // worst-needs first
     expect(idx("QUANT_PLUS")).toBeLessThan(idx("ANCHOR_START"));    // needs before shaky

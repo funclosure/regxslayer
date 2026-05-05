@@ -7,9 +7,12 @@ const monster: Monster = {
   name: "Test",
   portrait: "x",
   flavor: "",
+  pool: "wild",
+  traits: ["LITERAL"],
   layers: [
     {
       topic: "literals",
+      traits: ["LITERAL"],
       lines: [
         { text: "alpha", vital: true },
         { text: "beta",  vital: true },
@@ -18,6 +21,7 @@ const monster: Monster = {
     },
     {
       topic: "more",
+      traits: ["LITERAL"],
       lines: [
         { text: "gamma", vital: true },
         { text: "delta", vital: false },
@@ -99,7 +103,7 @@ describe("evaluate — slow pattern guard", () => {
     const evil = "(a+)+$";
     const slow: Monster = {
       ...monster,
-      layers: [{ topic: "x", lines: [{ text: "a".repeat(40) + "X", vital: true }, { text: "a".repeat(40) + "X", vital: true }] }],
+      layers: [{ topic: "x", traits: ["LITERAL"], lines: [{ text: "a".repeat(40) + "X", vital: true }, { text: "a".repeat(40) + "X", vital: true }] }],
       heart: { text: "z" },
     };
     const r = evaluate({ pattern: evil, monster: slow, phase: { kind: "layerActive", layerIdx: 0 }, budgetMs: 50 });
