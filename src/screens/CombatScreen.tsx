@@ -52,7 +52,10 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
 
   const totalLayers = monster.layers.length;
   const heartProgress = engine.state.phase.kind === "heart" || engine.state.phase.kind === "kill" ? 1 : 0;
-  const hpPercent = ((engine.state.layersStripped.length + heartProgress) / (totalLayers + 1)) * 100;
+  // HP is monster health — full at start, drains as the player progresses.
+  // Progress percent: how much of the monster you've cleared (layers + heart).
+  const progressPercent = ((engine.state.layersStripped.length + heartProgress) / (totalLayers + 1)) * 100;
+  const hpPercent = 100 - progressPercent;
 
   const inHeart = engine.state.phase.kind === "heart" || engine.state.phase.kind === "kill";
   const activeIdx =
