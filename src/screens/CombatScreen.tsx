@@ -9,6 +9,7 @@ import { LayerRoadmap } from "@/components/LayerRoadmap";
 import { MonsterPortrait } from "@/components/MonsterPortrait";
 import { RegexInput } from "@/components/RegexInput";
 import { ShimmerBanner } from "@/components/ShimmerBanner";
+import { HeartSparks } from "@/components/HeartSparks";
 import { POSITIVE_COLOR, DANGER_COLOR } from "@/components/style";
 import {
   useCombatEngine,
@@ -144,6 +145,10 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
               vitalsTotal={engine.evalResult?.vitalsTotal ?? 0}
               collateral={engine.evalResult?.collateral ?? 0}
               damage={engine.damage}
+            />
+            <HeartSparks
+              trigger={engine.pattern.length}
+              active={engine.state.phase.kind === "heart"}
             />
           </>
         )}

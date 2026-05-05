@@ -88,7 +88,16 @@ export function evaluate(input: EvaluateInput): EvalResult {
     if (matched.has("heart")) collateral++;
   } else if (isHeartPhase) {
     vitalsTotal = 1;
-    if (matched.has("heart")) vitalsHit = 1;
+    // Heart phase requires the regex to fully match the heart text (covering
+    // [0, length) in a single match range). A substring match counts as
+    // "the player is getting closer" — visible in the highlight, but not
+    // sufficient to kill. This keeps single-character heart kills from being
+    // a thing and makes the killing blow feel decisive.
+    const heartLen = monster.heart.text.length;
+    const heartFully = (ranges.get("heart") ?? []).some(([s, e]) => s === 0 && e === heartLen);
+    if (heartFully) vitalsHit = 1;
+    // Partial heart matches are NOT collateral — heart is the goal, partial
+    // progress is just feedback. Other-line matches still are.
     for (const key of matched) {
       if (key !== "heart") collateral++;
     }

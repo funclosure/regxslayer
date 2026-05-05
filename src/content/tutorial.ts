@@ -13,9 +13,10 @@ export const tutorialMonsters: Monster[] = [
       {
         topic: "exact words",
         traits: ["LITERAL"],
-        coaching: "Try typing: hello",
+        coaching: "Try typing: hello — your regex must match the vital and miss the others.",
         lines: [
           { text: "hello",    vital: true  },
+          { text: "helmet",   vital: false },
           { text: "goodbye",  vital: false },
           { text: "say hi",   vital: false },
         ],

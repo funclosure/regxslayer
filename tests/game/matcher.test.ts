@@ -113,7 +113,7 @@ describe("evaluate — matchedRanges (substring highlighting)", () => {
 });
 
 describe("evaluate — heart phase", () => {
-  test("perfect heart match", () => {
+  test("perfect heart match (full-line anchored)", () => {
     const r = evaluate({ pattern: "^HEART_TOKEN$", monster, phase: { kind: "heart" } });
     expect(r.vitalsHit).toBe(1);
     expect(r.vitalsTotal).toBe(1);
@@ -125,6 +125,23 @@ describe("evaluate — heart phase", () => {
     const r = evaluate({ pattern: ".+", monster, phase: { kind: "heart" } });
     expect(r.vitalsHit).toBe(1);
     expect(r.collateral).toBeGreaterThan(0);
+    expect(r.perfect).toBe(false);
+  });
+
+  test("substring of heart does NOT count as vitalsHit (heart phase requires full match)", () => {
+    // "HEART" appears inside "HEART_TOKEN" but doesn't cover the whole text.
+    const r = evaluate({ pattern: "HEART", monster, phase: { kind: "heart" } });
+    expect(r.vitalsHit).toBe(0);
+    expect(r.perfect).toBe(false);
+    // The match still shows up for highlighting (player sees they're warm).
+    expect(r.matchedLineKeys.has("heart")).toBe(true);
+    expect(r.matchedRanges.get("heart")?.length).toBeGreaterThan(0);
+  });
+
+  test("single-char regex unique to heart no longer kills (full-match required)", () => {
+    // "H" is in "HEART_TOKEN" but not in any layer line of this fixture.
+    const r = evaluate({ pattern: "H", monster, phase: { kind: "heart" } });
+    expect(r.vitalsHit).toBe(0);
     expect(r.perfect).toBe(false);
   });
 });
