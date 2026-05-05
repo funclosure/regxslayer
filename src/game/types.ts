@@ -1,4 +1,5 @@
 // src/game/types.ts
+import type { Trait } from "./traits";
 
 export type Line = {
   text: string;
@@ -7,23 +8,30 @@ export type Line = {
 
 export type Layer = {
   topic: string;
+  traits: Trait[];        // v2: non-empty, subset of the parent monster's traits
   lines: Line[];
+  coaching?: string;      // v2: only used by tutorial mode
 };
+
+export type MonsterPool = "story" | "wild" | "tutorial";
 
 export type Monster = {
   id: string;
   name: string;
-  portrait: string;          // key into src/content/portraits.ts
+  portrait: string;
   flavor: string;
-  layers: Layer[];           // peeled in order
-  heart: { text: string };   // single vital string
+  pool: MonsterPool;       // v2: drives mode selection
+  traits: Trait[];         // v2: non-empty, union over layers (+ heart traits if any)
+  layers: Layer[];
+  heart: { text: string };
+  coaching?: string;       // v2: shown during INTRO phase, tutorial mode only
 };
 
 export type Chapter = {
   id: string;
   title: string;
   intro: string;
-  cheatsheet: string[];      // shown on `?`
+  cheatsheet: string[];
   monsters: Monster[];
 };
 
@@ -51,12 +59,29 @@ export type BestRegex = {
 
 export type MonsterRecord = {
   slainAt: string;
-  bestRegexes: Record<string, BestRegex>;  // keys: "0", "1", ..., "heart"
+  bestRegexes: Record<string, BestRegex>;
 };
 
+// v2: trait-stat shape — see spec §3.5
+export type TraitStat = {
+  /** # of layers cleanly stripped while exercising this trait. */
+  perfectStrips: number;
+  /** # of distinct non-perfect patterns submitted on layers tagged with this trait,
+   *  deduped per (trait, layer-life). */
+  nonPerfectTries: number;
+};
+
+export type SaveMode = "story" | "encounter" | "tutorial";
+
 export type SaveFile = {
-  version: 1;
+  version: 2;
   createdAt: string;
   updatedAt: string;
   chapters: Record<string, { monsters: Record<string, MonsterRecord> }>;
+  // v2 fields
+  traitStats: Record<string, TraitStat>;   // keyed by Trait literal
+  encounterSessions: number;
+  encounterKills: number;
+  storyKills: number;
+  lastMode: SaveMode | null;
 };
