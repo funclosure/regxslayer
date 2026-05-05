@@ -24,7 +24,7 @@ const SLAIN_COLOR = "#ff6b6b";
 const STRIPPED_COLOR = "#4dffaa";
 const ATTR_BOLD = 1 << 0;
 const SHIMMER_SPOT_WIDTH = 6;          // chars on each side of the spotlight center
-const SHIMMER_BASE_COLOR = "#3a3a3a";  // color when no spotlight is on a char
+const SHIMMER_BASE_COLOR = "#9a9a9a";  // color outside the spotlight — readable, just muted vs the peak
 
 /** Drives a shimmer "spotlight" position from off-screen-left to off-screen-right
  *  over `totalMs`, plus an ease-out fade in the final 250ms. Returns:
