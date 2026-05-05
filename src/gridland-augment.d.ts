@@ -19,6 +19,7 @@ declare module "react" {
     interface IntrinsicElements {
       box: any;
       text: any;
+      span: any;
     }
   }
 }

@@ -12,7 +12,12 @@ export type BodyViewProps = {
 export type BodyRow = {
   gutter: string;
   prefix: string;
-  display: string;
+  /** The line text without any decoration. The component renders this in a colored span when `matched` is true. */
+  text: string;
+  /** True when the player's regex matches this line. Used for colorisation, no longer for inline brackets (which caused horizontal jitter). */
+  matched: boolean;
+  /** Whether this line is "good to match" (vital on the active layer or the heart in heart phase) vs collateral (filler / locked / heart-during-layer / non-heart-during-heart). */
+  matchKind: "vital" | "collateral";
 };
 
 /** Pure formatter for one body row, exported for testing.
@@ -35,7 +40,9 @@ export function formatBodyRow(args: {
     return {
       gutter: inHeart ? "♦" : " ",
       prefix: "",
-      display: matched ? `›${text}‹` : text,
+      text,
+      matched,
+      matchKind: inHeart ? "vital" : "collateral",
     };
   }
 
@@ -50,16 +57,40 @@ export function formatBodyRow(args: {
     " ";
 
   const matched = matchedKeys.has(`${layerIdx}:${lineIdx}`);
+  // "Good" matches: vital lines on the active (not stripped, not locked) layer.
+  // Anything else that matches is collateral (filler on active, anything on locked, anything stripped).
+  const matchKind: BodyRow["matchKind"] = (isActive && vital) ? "vital" : "collateral";
   return {
     gutter,
     prefix: isStripped ? "[STRIPPED] " : "",
-    display: matched ? `›${text}‹` : text,
+    text,
+    matched,
+    matchKind,
   };
 }
+
+const VITAL_HIT_COLOR = "#4dffaa";        // green — good
+const COLLATERAL_HIT_COLOR = "#ff6b6b";   // red — bad
 
 export function BodyView(props: BodyViewProps): React.ReactElement {
   const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys } = props;
   const stripped = new Set(strippedIdxs);
+
+  const renderRow = (key: string | number, row: BodyRow): React.ReactElement => {
+    const fg = row.matchKind === "vital" ? VITAL_HIT_COLOR : COLLATERAL_HIT_COLOR;
+    // gridland's <span> takes a `style` object with { fg, bg } — but React's HTML
+    // <span> typing claims the intrinsic with CSS Properties and our augmentation
+    // can't override that. Use createElement to bypass the JSX type-check
+    // (same workaround as <input> in RegexInput).
+    const colored = row.matched
+      ? React.createElement("span", { style: { fg } }, row.text)
+      : row.text;
+    return (
+      <text key={key}>
+        {row.gutter} {row.prefix}{colored}
+      </text>
+    );
+  };
 
   return (
     <box flexDirection="column">
@@ -77,7 +108,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
               inHeart,
               matchedKeys,
             });
-            return <text key={i}>{row.gutter} {row.prefix}{row.display}</text>;
+            return renderRow(i, row);
           })}
         </box>
       ))}
@@ -93,7 +124,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
           inHeart,
           matchedKeys,
         });
-        return <text>{row.gutter} {row.prefix}{row.display}</text>;
+        return renderRow("heart", row);
       })()}
     </box>
   );
