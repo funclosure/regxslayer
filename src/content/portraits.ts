@@ -11,4 +11,8 @@ export const portraits: Record<string, string[]> = {
   pluson:     ["  +++    ", " (^_^)   ", "  \\_/    "],
   questling:  ["  ?_?    ", " /. .\\   ", "  \\?/    "],
   bracetron:  ["  {n,m}  ", "  /OO\\   ", "  \\__/   "],
+  // tutorial
+  lump:       [" .-----.", " (  ^^ )", "  '---' "],
+  pip:        ["  ::: ", " ('o') ", "  \"-\"  "],
+  bop:        [" /\\_/\\ ", "( o.o )", "  > <  "],
 };
