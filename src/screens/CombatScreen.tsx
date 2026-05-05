@@ -24,14 +24,43 @@ const SLAIN_COLOR = "#ff6b6b";
 const STRIPPED_COLOR = "#4dffaa";
 const ATTR_BOLD = 1 << 0;
 
+/** Drives an opacity envelope for a banner: ramp in, hold, ramp out.
+ *  All times in ms; ramps are linear; runs once on mount. */
+function useFadeEnvelope(totalMs: number, fadeInMs: number, fadeOutMs: number): number {
+  const [opacity, setOpacity] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    let cancelled = false;
+    let handle: ReturnType<typeof setTimeout> | null = null;
+    const tick = (): void => {
+      if (cancelled) return;
+      const t = performance.now() - start;
+      let o: number;
+      if (t < fadeInMs) o = t / fadeInMs;
+      else if (t > totalMs - fadeOutMs) o = Math.max(0, (totalMs - t) / fadeOutMs);
+      else o = 1;
+      setOpacity(Math.max(0, Math.min(1, o)));
+      if (t < totalMs) handle = setTimeout(tick, 33); // ~30fps is plenty for a fade
+    };
+    tick();
+    return () => {
+      cancelled = true;
+      if (handle !== null) clearTimeout(handle);
+    };
+  }, [totalMs, fadeInMs, fadeOutMs]);
+  return opacity;
+}
+
 function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
+  // Total 2000ms (matches the kill-phase timeout in the parent useEffect).
+  const opacity = useFadeEnvelope(2000, 350, 350);
   const banner = React.createElement(
     "span",
     { style: { fg: SLAIN_COLOR, attributes: ATTR_BOLD } },
     "✦ ✦ ✦  SLAIN  ✦ ✦ ✦",
   );
   return (
-    <box flexDirection="column" gap={1} padding={1}>
+    <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
       <text>{banner}</text>
       <text>killed by:  {pattern}</text>
     </box>
@@ -39,13 +68,15 @@ function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
 }
 
 function LayerStrippedBanner({ topic, pattern }: { topic: string; pattern: string }): React.ReactElement {
+  // Total 1500ms (matches stripDelayMs default in useCombatEngine).
+  const opacity = useFadeEnvelope(1500, 250, 250);
   const banner = React.createElement(
     "span",
     { style: { fg: STRIPPED_COLOR, attributes: ATTR_BOLD } },
     `✓  LAYER STRIPPED — ${topic}`,
   );
   return (
-    <box flexDirection="column" gap={1} padding={1}>
+    <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
       <text>{banner}</text>
       <text>matched by:  {pattern}</text>
     </box>
