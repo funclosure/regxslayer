@@ -81,6 +81,37 @@ describe("evaluate — layer phase", () => {
   });
 });
 
+describe("evaluate — matchedRanges (substring highlighting)", () => {
+  test("anchored full-line match returns one range covering the whole line", () => {
+    const r = evaluate({ pattern: "^alpha$", monster, phase: { kind: "layerActive", layerIdx: 0 } });
+    expect(r.matchedRanges.get("0:0")).toEqual([[0, 5]]);
+    // unmatched lines have no entry
+    expect(r.matchedRanges.has("0:1")).toBe(false);
+  });
+
+  test("partial substring match returns ranges for each occurrence", () => {
+    const m: Monster = {
+      ...monster,
+      layers: [{ topic: "x", traits: ["LITERAL"], lines: [{ text: "ab cd ab", vital: true }] }],
+      heart: { text: "ZZZ" },
+    };
+    const r = evaluate({ pattern: "ab", monster: m, phase: { kind: "layerActive", layerIdx: 0 } });
+    expect(r.matchedRanges.get("0:0")).toEqual([[0, 2], [6, 8]]);
+  });
+
+  test("zero-length match (e.g. ^) records matched line with empty range array", () => {
+    const m: Monster = {
+      ...monster,
+      layers: [{ topic: "x", traits: ["LITERAL"], lines: [{ text: "alpha", vital: true }] }],
+      heart: { text: "ZZZ" },
+    };
+    const r = evaluate({ pattern: "^", monster: m, phase: { kind: "layerActive", layerIdx: 0 } });
+    expect(r.matchedLineKeys.has("0:0")).toBe(true);
+    // anchor matches but produces no underline-able substring
+    expect(r.matchedRanges.get("0:0")).toEqual([]);
+  });
+});
+
 describe("evaluate — heart phase", () => {
   test("perfect heart match", () => {
     const r = evaluate({ pattern: "^HEART_TOKEN$", monster, phase: { kind: "heart" } });

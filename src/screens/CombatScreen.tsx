@@ -98,6 +98,7 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
           strippedIdxs={engine.state.layersStripped}
           inHeart={inHeart}
           matchedKeys={engine.evalResult?.matchedLineKeys ?? new Set<string>()}
+          matchedRanges={engine.evalResult?.matchedRanges}
         />
         {hintOpen ? (
           <HintOverlay title={chapter.title} lines={chapter.cheatsheet} />

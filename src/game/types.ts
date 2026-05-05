@@ -35,6 +35,9 @@ export type Chapter = {
   monsters: Monster[];
 };
 
+/** Half-open match range within a single line: [start, end) in code-unit indices. */
+export type MatchRange = readonly [start: number, end: number];
+
 export type EvalResult = {
   vitalsHit: number;
   vitalsTotal: number;
@@ -43,6 +46,9 @@ export type EvalResult = {
   invalid?: string;
   /** Per-line match map, keyed by `${layerIdx}:${lineIdx}` for the body view. Heart entries use `heart`. */
   matchedLineKeys: ReadonlySet<string>;
+  /** Per-line match ranges (substring highlighting). Same key scheme as matchedLineKeys.
+   *  A line key with an empty array means "matched, but only zero-length matches" (no substrings to underline). */
+  matchedRanges: ReadonlyMap<string, ReadonlyArray<MatchRange>>;
 };
 
 export type CombatPhase =

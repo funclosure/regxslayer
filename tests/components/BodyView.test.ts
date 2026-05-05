@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { formatBodyRow } from "@/components/BodyView";
+import { formatBodyRow, splitByRanges } from "@/components/BodyView";
 
 const base = {
   activeLayerIdx: 0,
@@ -91,5 +91,34 @@ describe("formatBodyRow — heart row", () => {
     });
     expect(r.matched).toBe(true);
     expect(r.matchKind).toBe("collateral");
+  });
+});
+
+describe("splitByRanges", () => {
+  test("empty ranges → single unmatched segment with the full text", () => {
+    expect(splitByRanges("hello", [])).toEqual([{ text: "hello", matched: false }]);
+  });
+  test("one range covering the whole string → single matched segment", () => {
+    expect(splitByRanges("alpha", [[0, 5]])).toEqual([{ text: "alpha", matched: true }]);
+  });
+  test("range in the middle → unmatched/matched/unmatched", () => {
+    expect(splitByRanges("ab cd ef", [[3, 5]])).toEqual([
+      { text: "ab ", matched: false },
+      { text: "cd",  matched: true },
+      { text: " ef", matched: false },
+    ]);
+  });
+  test("multiple disjoint ranges", () => {
+    expect(splitByRanges("ab cd ab", [[0, 2], [6, 8]])).toEqual([
+      { text: "ab", matched: true },
+      { text: " cd ", matched: false },
+      { text: "ab", matched: true },
+    ]);
+  });
+  test("overlapping/touching ranges merge", () => {
+    expect(splitByRanges("abcdef", [[0, 3], [2, 5]])).toEqual([
+      { text: "abcde", matched: true },
+      { text: "f", matched: false },
+    ]);
   });
 });

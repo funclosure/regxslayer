@@ -1,5 +1,5 @@
 import React from "react";
-import type { Monster } from "@/game/types";
+import type { MatchRange, Monster } from "@/game/types";
 
 export type BodyViewProps = {
   monster: Monster;
@@ -7,16 +7,18 @@ export type BodyViewProps = {
   strippedIdxs: number[];
   inHeart: boolean;
   matchedKeys: ReadonlySet<string>;
+  /** Per-line match ranges (start, end) for substring highlighting. Empty array = matched but no underlineable substring (e.g. ^/$ anchor). */
+  matchedRanges?: ReadonlyMap<string, ReadonlyArray<MatchRange>>;
 };
 
 export type BodyRow = {
   gutter: string;
   prefix: string;
-  /** The line text without any decoration. The component renders this in a colored span when `matched` is true. */
+  /** The line text without any decoration. */
   text: string;
-  /** True when the player's regex matches this line. Used for colorisation, no longer for inline brackets (which caused horizontal jitter). */
+  /** True when the player's regex matches this line. */
   matched: boolean;
-  /** Whether this line is "good to match" (vital on the active layer or the heart in heart phase) vs collateral (filler / locked / heart-during-layer / non-heart-during-heart). */
+  /** Whether this line is "good to match" vs collateral. */
   matchKind: "vital" | "collateral";
 };
 
@@ -57,8 +59,6 @@ export function formatBodyRow(args: {
     " ";
 
   const matched = matchedKeys.has(`${layerIdx}:${lineIdx}`);
-  // "Good" matches: vital lines on the active (not stripped, not locked) layer.
-  // Anything else that matches is collateral (filler on active, anything on locked, anything stripped).
   const matchKind: BodyRow["matchKind"] = (isActive && vital) ? "vital" : "collateral";
   return {
     gutter,
@@ -69,25 +69,73 @@ export function formatBodyRow(args: {
   };
 }
 
+/** Split a string into alternating [unmatched, matched, unmatched, ...] segments
+ *  given a sorted list of half-open ranges. Exported for testing. */
+export type Segment = { text: string; matched: boolean };
+export function splitByRanges(text: string, ranges: ReadonlyArray<MatchRange>): Segment[] {
+  if (ranges.length === 0) return [{ text, matched: false }];
+  // Sort + merge overlapping (matchAll shouldn't produce overlaps, but be defensive).
+  const sorted = [...ranges].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const merged: Array<[number, number]> = [];
+  for (const [s, e] of sorted) {
+    const last = merged[merged.length - 1];
+    if (last && s <= last[1]) {
+      last[1] = Math.max(last[1], e);
+    } else {
+      merged.push([s, e]);
+    }
+  }
+  const out: Segment[] = [];
+  let cursor = 0;
+  for (const [s, e] of merged) {
+    if (s > cursor) out.push({ text: text.slice(cursor, s), matched: false });
+    if (e > s)     out.push({ text: text.slice(s, e), matched: true });
+    cursor = e;
+  }
+  if (cursor < text.length) out.push({ text: text.slice(cursor), matched: false });
+  return out;
+}
+
 const VITAL_HIT_COLOR = "#4dffaa";        // green — good
 const COLLATERAL_HIT_COLOR = "#ff6b6b";   // red — bad
+const ATTR_UNDERLINE = 1 << 3;            // gridland TextAttributes.UNDERLINE
 
 export function BodyView(props: BodyViewProps): React.ReactElement {
-  const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys } = props;
+  const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys, matchedRanges } = props;
   const stripped = new Set(strippedIdxs);
+  const ranges = matchedRanges ?? new Map<string, ReadonlyArray<MatchRange>>();
 
-  const renderRow = (key: string | number, row: BodyRow): React.ReactElement => {
+  const renderRow = (key: string | number, lineKey: string, row: BodyRow): React.ReactElement => {
     const fg = row.matchKind === "vital" ? VITAL_HIT_COLOR : COLLATERAL_HIT_COLOR;
-    // gridland's <span> takes a `style` object with { fg, bg } — but React's HTML
-    // <span> typing claims the intrinsic with CSS Properties and our augmentation
-    // can't override that. Use createElement to bypass the JSX type-check
-    // (same workaround as <input> in RegexInput).
-    const colored = row.matched
-      ? React.createElement("span", { style: { fg } }, row.text)
-      : row.text;
+    const lineRanges = row.matched ? (ranges.get(lineKey) ?? []) : [];
+    // If matched but no underlineable substring (e.g. ^/$ anchor), color the
+    // whole line in fg without underline — the match still happened.
+    if (row.matched && lineRanges.length === 0) {
+      const colored = React.createElement("span", { style: { fg } }, row.text);
+      return (
+        <text key={key}>
+          {row.gutter} {row.prefix}{colored}
+        </text>
+      );
+    }
+    if (!row.matched) {
+      return (
+        <text key={key}>
+          {row.gutter} {row.prefix}{row.text}
+        </text>
+      );
+    }
+    // Substring highlight: split into segments, render the matched ones with
+    // fg + UNDERLINE attribute (underline keeps the visual cue colorblind-safe).
+    const segments = splitByRanges(row.text, lineRanges);
+    const children = segments.map((seg, idx) =>
+      seg.matched
+        ? React.createElement("span", { key: idx, style: { fg, attributes: ATTR_UNDERLINE } }, seg.text)
+        : seg.text,
+    );
     return (
       <text key={key}>
-        {row.gutter} {row.prefix}{colored}
+        {row.gutter} {row.prefix}{children}
       </text>
     );
   };
@@ -108,7 +156,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
               inHeart,
               matchedKeys,
             });
-            return renderRow(i, row);
+            return renderRow(i, `${li}:${i}`, row);
           })}
         </box>
       ))}
@@ -124,7 +172,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
           inHeart,
           matchedKeys,
         });
-        return renderRow("heart", row);
+        return renderRow("heart", "heart", row);
       })()}
     </box>
   );
