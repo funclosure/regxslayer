@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
 import type { Chapter, SaveFile } from "@/game/types";
 
-export type ChapterSelectProps = {
+export type StorySelectProps = {
   chapters: Chapter[];
   save: SaveFile;
   onPickMonster: (chapterId: string, monsterId: string) => void;
@@ -33,7 +33,7 @@ function flattenEntries(chapters: Chapter[], save: SaveFile): Entry[] {
   });
 }
 
-export function ChapterSelectScreen({ chapters, save, onPickMonster, onBack }: ChapterSelectProps): React.ReactElement {
+export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: StorySelectProps): React.ReactElement {
   const entries = flattenEntries(chapters, save);
   const [idx, setIdx] = useState(0);
 
