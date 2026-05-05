@@ -112,8 +112,10 @@ EXIT         : write progress, return to CHAPTER_SELECT
 
 - `esc` from combat → confirm prompt → return to MENU. Progress for unfinished
   monsters is **not** persisted (you have to slay to save the kill).
-- `?` opens an inline hint panel (overlay) showing the current chapter's
-  cheatsheet. Press `?` or `esc` to close.
+- `tab` opens an inline hint panel (overlay) showing the current chapter's
+  cheatsheet. Press `tab` or `esc` to close. (Originally specced as `?`, but
+  `?` collides with `QUANT_OPTIONAL` — players need to type `?` into their
+  regex. `tab` never appears in a regex pattern.)
 
 ## 5. Combat mechanics
 
@@ -232,9 +234,10 @@ precisionPenalty = max(0.2, 1 - 0.25 * collateral)
   ```
 
 - **`BodyView`** — renders all layers, top to bottom. Each line gets a left
-  **gutter marker**: `♦` for vital, blank for filler, dim ` ` for stripped.
-  The whole text of matched lines is wrapped in a highlight color, updated
-  live on every keystroke.
+  **gutter marker**: `♦` for active vital, blank for active filler, `⛓` for
+  locked, `·` for stripped (with `DIM`+`STRIKETHROUGH` on the line text).
+  Matched substrings within a line are colored (green for vital matches, red
+  for collateral) and underlined for color-blind safety.
 - **`RegexInput`** — single-line text input, cursor visible. Renders the
   pattern with light syntax highlighting (group parens, char-class brackets,
   quantifiers in distinct colors). Inline `⚠ <syntax error>` to the right
@@ -242,9 +245,9 @@ precisionPenalty = max(0.2, 1 - 0.25 * collateral)
 - **`FeedbackLine`** — two stacked lines:
   - top: `1/2 vitals · collateral 0 · dmg 42`
   - bottom: `🔸 partial`
-- **`ControlsHint`** — `[?] hint   [esc] flee`.
+- **`ControlsHint`** — `[tab] hint   [esc] flee`.
 - **`HintOverlay`** — full-arena overlay (over the body) showing the chapter
-  cheatsheet; `?` or `esc` to dismiss.
+  cheatsheet; `tab` or `esc` to dismiss.
 
 ### 6.4 Hooks (`src/components/hooks/`)
 
@@ -423,8 +426,9 @@ menu. Never silently overwrite a corrupt save.
   `Please resize to at least 100×30 (currently <w>×<h>)`. `useTerminalDimensions`
   reacts to live resize.
 - **`NO_COLOR` env / no-color terminals** — color is never the only signal.
-  Fall back: `♦` vital marker, `▶` cursor, `[STRIPPED]` prefix on dead layers,
-  `›line‹` brackets around matched lines.
+  Fall back: `♦` vital marker, `⛓` locked layers, `·` stripped layers (also
+  rendered with `STRIKETHROUGH` attribute), `▶` cursor, `UNDERLINE` attribute
+  on matched substrings.
 - **Save file unwritable** — show non-blocking footer warning
   `⚠ progress not saved`. Game continues.
 - **Process signals** — handle `SIGINT` and `SIGTERM` to restore the terminal

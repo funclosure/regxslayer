@@ -5,6 +5,14 @@ import { evaluate } from "@/game/matcher";
 import type { Trait } from "@/game/traits";
 import type { EvalResult, Monster } from "@/game/types";
 
+/**
+ * How long a per-layer STRIPPED banner runs, AND how long the heart-kill
+ * SLAIN banner runs. Single source of truth — `CombatScreen`'s kill-phase
+ * timeout, the strip-phase timer, and `ShimmerBanner` durations all derive
+ * from this. Tweak this one number to retime both banners together.
+ */
+export const BANNER_DURATION_MS = 2500;
+
 export type TraitEvent =
   | { kind: "perfect-strip"; layerIdx: number; traits: Trait[] }
   | { kind: "non-perfect-try"; layerIdx: number; traits: Trait[] };
@@ -26,7 +34,7 @@ export type UseCombatEngineOpts = {
 };
 
 export function useCombatEngine(opts: UseCombatEngineOpts): CombatEngine {
-  const stripDelayMs = opts.stripDelayMs ?? 2500;
+  const stripDelayMs = opts.stripDelayMs ?? BANNER_DURATION_MS;
 
   const [state, setState] = useState<CombatState>(() => initialState(opts.monster));
   const [pattern, setPattern] = useState("");

@@ -1,5 +1,11 @@
 import React from "react";
 import type { MatchRange, Monster } from "@/game/types";
+import {
+  ATTR_STRIPPED,
+  ATTR_UNDERLINE,
+  DANGER_COLOR,
+  POSITIVE_COLOR,
+} from "@/components/style";
 
 export type BodyViewProps = {
   monster: Monster;
@@ -53,8 +59,11 @@ export function formatBodyRow(args: {
   const isActive = !inHeart && layerIdx === activeLayerIdx && !isStripped;
   const isLocked = !inHeart && layerIdx > activeLayerIdx;
 
+  // Gutter glyphs are always visible regardless of theme — they're the
+  // accessibility-safe fallback when ANSI dim doesn't render well (e.g. light
+  // terminals where dim is nearly invisible).
   const gutter =
-    isStripped ? " " :
+    isStripped ? "·" :
     isActive   ? (vital ? "♦" : " ") :
     isLocked   ? "⛓" :
     " ";
@@ -96,13 +105,6 @@ export function splitByRanges(text: string, ranges: ReadonlyArray<MatchRange>): 
   return out;
 }
 
-const VITAL_HIT_COLOR = "#4dffaa";              // green — good
-const COLLATERAL_HIT_COLOR = "#ff6b6b";         // red — bad
-const ATTR_UNDERLINE = 1 << 3;                  // gridland TextAttributes.UNDERLINE
-const ATTR_DIM = 1 << 1;                        // gridland TextAttributes.DIM
-const ATTR_STRIKETHROUGH = 1 << 7;              // gridland TextAttributes.STRIKETHROUGH
-const ATTR_STRIPPED = ATTR_DIM | ATTR_STRIKETHROUGH;
-
 export function BodyView(props: BodyViewProps): React.ReactElement {
   const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys, matchedRanges } = props;
   const stripped = new Set(strippedIdxs);
@@ -111,19 +113,19 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
   const renderRow = (key: string | number, lineKey: string, row: BodyRow): React.ReactElement => {
     // Stripped rows: dim + strikethrough on the whole line, ignore match colors.
     if (row.stripped) {
-      const stripped = React.createElement(
+      const strippedText = React.createElement(
         "span",
         { style: { attributes: ATTR_STRIPPED } },
         row.text,
       );
       return (
         <text key={key}>
-          {row.gutter} {stripped}
+          {row.gutter} {strippedText}
         </text>
       );
     }
 
-    const fg = row.matchKind === "vital" ? VITAL_HIT_COLOR : COLLATERAL_HIT_COLOR;
+    const fg = row.matchKind === "vital" ? POSITIVE_COLOR : DANGER_COLOR;
     const lineRanges = row.matched ? (ranges.get(lineKey) ?? []) : [];
 
     // Matched but no substring (e.g. ^/$ anchor): color whole line.

@@ -27,12 +27,12 @@ describe("formatBodyRow — layer rows", () => {
     });
     expect(r).toEqual({ gutter: "⛓", text: "gamma", matched: false, matchKind: "collateral", stripped: false });
   });
-  test("stripped layer rows: stripped flag set, blank gutter, no [STRIPPED] prefix", () => {
+  test("stripped layer rows: stripped flag set, · gutter marker (theme-safe)", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 0, text: "alpha", vital: true,
       ...base, stripped: new Set([0]), activeLayerIdx: 1,
     });
-    expect(r).toEqual({ gutter: " ", text: "alpha", matched: false, matchKind: "collateral", stripped: true });
+    expect(r).toEqual({ gutter: "·", text: "alpha", matched: false, matchKind: "collateral", stripped: true });
   });
   test("active vital line, matched: matched=true, matchKind=vital, text unchanged (no jitter brackets)", () => {
     const r = formatBodyRow({

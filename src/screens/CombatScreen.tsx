@@ -8,7 +8,13 @@ import { HpBar } from "@/components/HpBar";
 import { LayerRoadmap } from "@/components/LayerRoadmap";
 import { MonsterPortrait } from "@/components/MonsterPortrait";
 import { RegexInput } from "@/components/RegexInput";
-import { useCombatEngine, type TraitEvent } from "@/components/hooks/useCombatEngine";
+import { ShimmerBanner } from "@/components/ShimmerBanner";
+import { POSITIVE_COLOR, DANGER_COLOR } from "@/components/style";
+import {
+  useCombatEngine,
+  BANNER_DURATION_MS,
+  type TraitEvent,
+} from "@/components/hooks/useCombatEngine";
 import type { Chapter, Monster, BestRegex, SaveMode } from "@/game/types";
 
 export type CombatScreenProps = {
@@ -20,112 +26,17 @@ export type CombatScreenProps = {
   onTraitEvent?: (e: TraitEvent) => void;
 };
 
-const SLAIN_COLOR = "#ff6b6b";
-const STRIPPED_COLOR = "#4dffaa";
-const ATTR_BOLD = 1 << 0;
-const SHIMMER_SPOT_WIDTH = 6;          // chars on each side of the spotlight center
-const SHIMMER_BASE_COLOR = "#9a9a9a";  // color outside the spotlight — readable, just muted vs the peak
-
-/** Drives a shimmer "spotlight" position from off-screen-left to off-screen-right
- *  over `totalMs`, plus an ease-out fade in the final 250ms. Returns:
- *    - `pos`: the spotlight character index (can be negative, can exceed length)
- *    - `opacity`: 0..1 envelope (ramps down at the end so the banner fades into
- *      whatever comes next instead of cutting). */
-function useShimmer(totalMs: number, textLength: number): { pos: number; opacity: number } {
-  const fadeOutMs = 250;
-  const [t, setT] = useState(0);
-  useEffect(() => {
-    const start = performance.now();
-    let cancelled = false;
-    let handle: ReturnType<typeof setTimeout> | null = null;
-    const tick = (): void => {
-      if (cancelled) return;
-      const elapsed = performance.now() - start;
-      setT(elapsed);
-      if (elapsed < totalMs) handle = setTimeout(tick, 33);
-    };
-    tick();
-    return () => {
-      cancelled = true;
-      if (handle !== null) clearTimeout(handle);
-    };
-  }, [totalMs]);
-
-  // Spotlight runs across the text + outside margins so the shine enters and exits cleanly.
-  const sweepStart = -SHIMMER_SPOT_WIDTH;
-  const sweepEnd = textLength + SHIMMER_SPOT_WIDTH;
-  const progress = Math.min(1, t / Math.max(1, totalMs - fadeOutMs));
-  const pos = sweepStart + (sweepEnd - sweepStart) * progress;
-  const opacity = t > totalMs - fadeOutMs ? Math.max(0, (totalMs - t) / fadeOutMs) : 1;
-  return { pos, opacity };
-}
-
-/** Linearly interpolate two #rrggbb colors. `mix` in 0..1 (0 → a, 1 → b). */
-function blendHex(a: string, b: string, mix: number): string {
-  const m = Math.max(0, Math.min(1, mix));
-  const ar = parseInt(a.slice(1, 3), 16);
-  const ag = parseInt(a.slice(3, 5), 16);
-  const ab = parseInt(a.slice(5, 7), 16);
-  const br = parseInt(b.slice(1, 3), 16);
-  const bg = parseInt(b.slice(3, 5), 16);
-  const bb = parseInt(b.slice(5, 7), 16);
-  const r = Math.round(ar + (br - ar) * m);
-  const g = Math.round(ag + (bg - ag) * m);
-  const bl = Math.round(ab + (bb - ab) * m);
-  const hh = (n: number): string => n.toString(16).padStart(2, "0");
-  return `#${hh(r)}${hh(g)}${hh(bl)}`;
-}
-
-/** Render `text` as a row of per-character spans, each colored by its distance
- *  from the spotlight. The spotlight at `pos` is the brightest; chars farther
- *  away fall off linearly toward `SHIMMER_BASE_COLOR`. */
-function shimmerSpans(text: string, pos: number, peakColor: string): React.ReactElement[] {
-  return Array.from(text).map((ch, i) => {
-    const d = Math.abs(i - pos);
-    const intensity = Math.max(0, 1 - d / SHIMMER_SPOT_WIDTH);
-    const fg = blendHex(SHIMMER_BASE_COLOR, peakColor, intensity);
-    return React.createElement(
-      "span",
-      { key: i, style: { fg, attributes: ATTR_BOLD } },
-      ch,
-    );
-  });
-}
-
-function SlainBanner({ pattern }: { pattern: string }): React.ReactElement {
-  // Matches the kill-phase timeout in the parent useEffect (2500ms).
-  const text = "✦ ✦ ✦  SLAIN  ✦ ✦ ✦";
-  const { pos, opacity } = useShimmer(2500, text.length);
-  return (
-    <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
-      <text>{shimmerSpans(text, pos, SLAIN_COLOR)}</text>
-      <text>killed by:  {pattern}</text>
-    </box>
-  );
-}
-
-function LayerStrippedBanner({ topic, pattern }: { topic: string; pattern: string }): React.ReactElement {
-  // Matches stripDelayMs default in useCombatEngine (2500ms).
-  const text = `✓  LAYER STRIPPED — ${topic}`;
-  const { pos, opacity } = useShimmer(2500, text.length);
-  return (
-    <box flexDirection="column" gap={1} padding={1} opacity={opacity}>
-      <text>{shimmerSpans(text, pos, STRIPPED_COLOR)}</text>
-      <text>matched by:  {pattern}</text>
-    </box>
-  );
-}
-
 export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const { chapter, monster, mode, onKill, onFlee, onTraitEvent } = props;
   const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
-  // Hold the kill scene for 2.5s before transitioning, matching the per-layer
-  // strip duration so banner pacing feels consistent.
+  // Hold the kill scene for one banner-duration before transitioning to victory.
+  // The same constant powers the strip-phase timer in useCombatEngine, so the
+  // STRIPPED and SLAIN banners pace identically.
   useEffect(() => {
     if (engine.state.phase.kind !== "kill") return;
-    const timer = setTimeout(() => onKill(engine.state.bestRegexes), 2500);
+    const timer = setTimeout(() => onKill(engine.state.bestRegexes), BANNER_DURATION_MS);
     return () => clearTimeout(timer);
   }, [engine.state.phase, engine.state.bestRegexes, onKill]);
 
@@ -151,7 +62,6 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const totalLayers = monster.layers.length;
   const heartProgress = engine.state.phase.kind === "heart" || engine.state.phase.kind === "kill" ? 1 : 0;
   // HP is monster health — full at start, drains as the player progresses.
-  // Progress percent: how much of the monster you've cleared (layers + heart).
   const progressPercent = ((engine.state.layersStripped.length + heartProgress) / (totalLayers + 1)) * 100;
   const hpPercent = 100 - progressPercent;
 
@@ -205,11 +115,20 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
           matchedRanges={engine.evalResult?.matchedRanges}
         />
         {engine.state.phase.kind === "kill" ? (
-          <SlainBanner pattern={engine.state.bestRegexes["heart"]?.pattern ?? engine.pattern} />
+          <ShimmerBanner
+            headline="✦ ✦ ✦  SLAIN  ✦ ✦ ✦"
+            peakColor={DANGER_COLOR}
+            durationMs={BANNER_DURATION_MS}
+            footnoteLabel="killed by:"
+            footnoteValue={engine.state.bestRegexes["heart"]?.pattern ?? engine.pattern}
+          />
         ) : engine.state.phase.kind === "strip" ? (
-          <LayerStrippedBanner
-            topic={monster.layers[engine.state.phase.layerIdx]?.topic ?? ""}
-            pattern={engine.state.bestRegexes[String(engine.state.phase.layerIdx)]?.pattern ?? engine.pattern}
+          <ShimmerBanner
+            headline={`✓  LAYER STRIPPED — ${monster.layers[engine.state.phase.layerIdx]?.topic ?? ""}`}
+            peakColor={POSITIVE_COLOR}
+            durationMs={BANNER_DURATION_MS}
+            footnoteLabel="matched by:"
+            footnoteValue={engine.state.bestRegexes[String(engine.state.phase.layerIdx)]?.pattern ?? engine.pattern}
           />
         ) : hintOpen ? (
           <HintOverlay title={chapter.title} lines={chapter.cheatsheet} />
