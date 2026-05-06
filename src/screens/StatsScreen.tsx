@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
+import { Screen } from "@/components/Screen";
 import { TRAITS } from "@/game/traits";
 import { classify, sortTraits } from "@/game/stats";
 import type { SaveFile, TraitStat } from "@/game/types";
 import type { Trait } from "@/game/traits";
-import { Screen } from "@/components/Screen";
 
 export type StatsScreenProps = {
   save: SaveFile;

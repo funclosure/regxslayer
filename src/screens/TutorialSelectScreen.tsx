@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import type { Monster } from "@/game/types";
 import { Screen } from "@/components/Screen";
+import type { Monster } from "@/game/types";
 
 export type TutorialSelectProps = {
   monsters: Monster[];
