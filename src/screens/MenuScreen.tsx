@@ -43,6 +43,15 @@ export function buildChapterRows(save: SaveFile): string[] {
   return [CHAPTER_BOX_TOP, ...body, CHAPTER_BOX_BOTTOM];
 }
 
+export function buildBottomLine(save: SaveFile): string {
+  const slain = save.storyKills + save.encounterKills;
+  const sessions = save.encounterSessions;
+  if (slain === 0 && sessions === 0) {
+    return "[↑↓] move · [enter] choose · [q] quit";
+  }
+  return `${slain} slain · ${sessions} sessions · [↑↓] [enter]`;
+}
+
 export function navigateMenu(itemCount: number, currentIdx: number, direction: "up" | "down"): number {
   if (itemCount <= 0) return 0;
   return direction === "down"

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows } from "@/screens/MenuScreen";
+import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, buildBottomLine } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -138,5 +138,26 @@ describe("buildChapterRows", () => {
     const rows = buildChapterRows(empty);
     expect(new Set(rows.map((r) => [...r].length)).size).toBe(1);
     expect([...rows[0]!].length).toBe(23);
+  });
+});
+
+describe("buildBottomLine", () => {
+  test("welcomes a fresh player when no kills and no sessions", () => {
+    expect(buildBottomLine(empty)).toBe("[↑↓] move · [enter] choose · [q] quit");
+  });
+
+  test("shows kill stats when player has progress", () => {
+    const save: SaveFile = { ...empty, storyKills: 30, encounterKills: 7, encounterSessions: 4 };
+    expect(buildBottomLine(save)).toBe("37 slain · 4 sessions · [↑↓] [enter]");
+  });
+
+  test("shows stats variant when only sessions are nonzero", () => {
+    const save: SaveFile = { ...empty, encounterSessions: 1 };
+    expect(buildBottomLine(save)).toBe("0 slain · 1 sessions · [↑↓] [enter]");
+  });
+
+  test("shows stats variant when only kills are nonzero", () => {
+    const save: SaveFile = { ...empty, storyKills: 1 };
+    expect(buildBottomLine(save)).toBe("1 slain · 0 sessions · [↑↓] [enter]");
   });
 });
