@@ -55,7 +55,7 @@ regxslayer is fully offline. It opens no network sockets.
 
 ## Built with
 
-regxslayer's TUI is built on **gridland** — a React renderer for terminal
-grids. The `@gridland/bun` runtime (`npm i @gridland/bun`) drives the render
-loop and `@gridland/utils` provides the keyboard hook, terminal dimensions,
-and the `<scrollbox>` primitive used across every screen.
+regxslayer's TUI is built on [gridland](https://github.com/thoughtfulllc/gridland) —
+a React renderer for terminal grids. The `@gridland/bun` runtime drives the
+render loop and `@gridland/utils` provides the keyboard hook, terminal
+dimensions, and the `<scrollbox>` primitive used across every screen.
