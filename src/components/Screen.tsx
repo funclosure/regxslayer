@@ -1,41 +1,35 @@
 import React from "react";
+import { ChromeBar } from "@/components/ChromeBar";
 
 /** Default inner column width for screens, in characters. */
 export const DEFAULT_SCREEN_WIDTH = 64;
 
-/**
- * Pure prop builder for the outer box of `Screen`. Extracted so the
- * conditional-prop logic can be unit-tested without rendering.
- */
-export function screenOuterBoxProps(centerVertically: boolean) {
-  const base = {
-    flexDirection: "column" as const,
-    flexGrow: 1,
-    padding: 2,
-    alignItems: "center" as const,
-  };
-  return centerVertically
-    ? { ...base, justifyContent: "center" as const }
-    : base;
-}
-
 export type ScreenProps = {
   children: React.ReactNode;
+  /** Right-aligned chrome hint, e.g. "[esc] back · [?] help". */
+  hints: string;
   /** Inner column width in characters. Default `DEFAULT_SCREEN_WIDTH` (64). */
   width?: number;
-  /** Centers content vertically as well as horizontally. Default false. */
-  centerVertically?: boolean;
 };
 
+/**
+ * Standard screen frame: chrome bar on top + a centered, fixed-width
+ * inner column that fills the remaining height. Children control where
+ * vertical slack is absorbed (use `<box flexGrow={1} />` for an empty
+ * gap or `<scrollbox flexGrow={1}>` to scroll long content).
+ */
 export function Screen({
   children,
+  hints,
   width = DEFAULT_SCREEN_WIDTH,
-  centerVertically = false,
 }: ScreenProps): React.ReactElement {
   return (
-    <box {...screenOuterBoxProps(centerVertically)}>
-      <box flexDirection="column" width={width}>
-        {children}
+    <box flexDirection="column" flexGrow={1} width="100%">
+      <ChromeBar hints={hints} />
+      <box flexDirection="column" flexGrow={1} alignItems="center" padding={2}>
+        <box flexDirection="column" width={width} flexGrow={1} gap={1}>
+          {children}
+        </box>
       </box>
     </box>
   );

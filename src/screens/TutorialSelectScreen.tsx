@@ -24,14 +24,16 @@ export function TutorialSelectScreen({ monsters, onPick, onBack }: TutorialSelec
   }, { global: true });
 
   return (
-    <Screen centerVertically>
-      <text>Tutorial — pick a teacher  ([esc] back)</text>
-      <text>──────────────────────────────────────</text>
-      {monsters.map((m, i) => (
-        <text key={m.id}>{i === idx ? "▶ " : "  "}{m.name}</text>
-      ))}
-      <text> </text>
+    <Screen hints="[↑↓] move · [⏎] start · [esc] back">
+      <box flexDirection="column" gap={0}>
+        <text>Tutorial — pick a teacher  ([esc] back)</text>
+        <text>──────────────────────────────────────</text>
+        {monsters.map((m, i) => (
+          <text key={m.id}>{i === idx ? "▶ " : "  "}{m.name}</text>
+        ))}
+      </box>
       <text>(tutorials are replayable; they don't track progress or feed stats)</text>
+      <box flexGrow={1} />
     </Screen>
   );
 }

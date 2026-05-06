@@ -13,13 +13,14 @@ export function VictoryScreen({ monsterName, onContinue }: VictoryScreenProps): 
   }, { global: true });
 
   return (
-    <Screen centerVertically>
-      <box flexDirection="column" gap={1} alignItems="center">
+    <Screen hints="[⏎] continue">
+      <box flexDirection="column" gap={0}>
         <text>VICTORY</text>
-        <text>{monsterName} has fallen.</text>
         <text>───────────────</text>
-        <text>press ⏎ to continue</text>
       </box>
+      <text>{monsterName} has fallen.</text>
+      <box flexGrow={1} />
+      <text>press ⏎ to continue</text>
     </Screen>
   );
 }

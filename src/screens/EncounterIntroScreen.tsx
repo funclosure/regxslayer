@@ -14,16 +14,16 @@ export function EncounterIntroScreen({ onBegin, onBack }: EncounterIntroProps): 
   }, { global: true });
 
   return (
-    <Screen centerVertically>
-      <box flexDirection="column" gap={1}>
+    <Screen hints="[⏎] begin · [esc] back">
+      <box flexDirection="column" gap={0}>
         <text>WILD ENCOUNTER MODE</text>
         <text>───────────────────</text>
-        <text>Random monsters from the wild + story pools.</text>
-        <text>Slay one and the next appears immediately.</text>
-        <text>[esc] flees back to main menu.</text>
-        <text> </text>
-        <text>[⏎] begin     [esc] back</text>
       </box>
+      <text>Random monsters from the wild + story pools.</text>
+      <text>Slay one and the next appears immediately.</text>
+      <text>[esc] flees back to main menu.</text>
+      <box flexGrow={1} />
+      <text>[⏎] begin     [esc] back</text>
     </Screen>
   );
 }

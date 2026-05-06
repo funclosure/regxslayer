@@ -44,18 +44,22 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   const total = save.storyKills + save.encounterKills;
 
   return (
-    <Screen centerVertically>
-      <text>STATS  ([esc] back)</text>
-      <text>───────────────────</text>
-      <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
-      <text>Sessions: {save.encounterSessions} encounter runs</text>
-      <text> </text>
-      <text>Trait practice (sorted: needs-practice → strong)</text>
-      <text>─────────────────────────────────────────────────</text>
-      {rows.map((r) => (
-        <text key={r.trait}>{renderStatsRowText(r.trait, r.stat)}</text>
-      ))}
-      <text> </text>
+    <Screen hints="[r] reset · [esc] back">
+      <box flexDirection="column" gap={0}>
+        <text>STATS  ([esc] back)</text>
+        <text>───────────────────</text>
+        <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
+        <text>Sessions: {save.encounterSessions} encounter runs</text>
+      </box>
+      <box flexDirection="column" gap={0}>
+        <text>Trait practice (sorted: needs-practice → strong)</text>
+        <text>─────────────────────────────────────────────────</text>
+      </box>
+      <scrollbox flexGrow={1}>
+        {rows.map((r) => (
+          <text key={r.trait}>{renderStatsRowText(r.trait, r.stat)}</text>
+        ))}
+      </scrollbox>
       {confirming
         ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
         : <text>[r] reset stats     [esc] back</text>}

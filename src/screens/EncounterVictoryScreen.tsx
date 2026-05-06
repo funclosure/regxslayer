@@ -26,15 +26,15 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
   }, [autoAdvanceMs, onAdvance]);
 
   return (
-    <Screen centerVertically>
-      <box flexDirection="column" gap={1} alignItems="center">
+    <Screen hints="any key advances · [esc] menu">
+      <box flexDirection="column" gap={0}>
         <text>SLAIN</text>
-        <text>{monsterName}</text>
         <text>───────────────</text>
-        <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
-        <text> </text>
-        <text>any key advances · [esc] main menu</text>
       </box>
+      <text>{monsterName}</text>
+      <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
+      <box flexGrow={1} />
+      <text>any key advances · [esc] main menu</text>
     </Screen>
   );
 }
