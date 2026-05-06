@@ -13,6 +13,7 @@ import { EncounterIntroScreen } from "@/screens/EncounterIntroScreen";
 import { EncounterVictoryScreen } from "@/screens/EncounterVictoryScreen";
 import { TutorialSelectScreen } from "@/screens/TutorialSelectScreen";
 import { StatsScreen } from "@/screens/StatsScreen";
+import { SaveProvider } from "@/components/SaveContext";
 import {
   loadSave,
   recordKill,
@@ -134,224 +135,171 @@ export function App(): React.ReactElement {
 
   // ----- screen branches -----
 
+  let routeJsx: React.ReactElement;
   if (route.kind === "menu") {
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}><MenuScreen save={save} onSelect={handleMenuSelect} /></box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+    routeJsx = <MenuScreen save={save} onSelect={handleMenuSelect} />;
+  } else if (route.kind === "stats") {
+    routeJsx = (
+      <StatsScreen
+        save={save}
+        onReset={() => {
+          const r = resetStats(save);
+          setSave(r.save); updatePersisted(r.persisted);
+        }}
+        onBack={() => setRoute({ kind: "menu" })}
+      />
     );
-  }
-
-  if (route.kind === "stats") {
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <StatsScreen
-            save={save}
-            onReset={() => {
-              const r = resetStats(save);
-              setSave(r.save); updatePersisted(r.persisted);
-            }}
-            onBack={() => setRoute({ kind: "menu" })}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+  } else if (route.kind === "story-select") {
+    routeJsx = (
+      <StorySelectScreen
+        chapters={storyChapters}
+        save={save}
+        onPickMonster={(chapterId, monsterId) =>
+          setRoute({ kind: "combat", chapterId, monsterId, mode: "story" })
+        }
+        onBack={() => setRoute({ kind: "menu" })}
+      />
     );
-  }
-
-  if (route.kind === "story-select") {
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <StorySelectScreen
-            chapters={storyChapters}
-            save={save}
-            onPickMonster={(chapterId, monsterId) =>
-              setRoute({ kind: "combat", chapterId, monsterId, mode: "story" })
-            }
-            onBack={() => setRoute({ kind: "menu" })}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+  } else if (route.kind === "tutorial-select") {
+    routeJsx = (
+      <TutorialSelectScreen
+        monsters={tutorialMonsters}
+        onPick={(monsterId) =>
+          setRoute({ kind: "combat", chapterId: TUTORIAL_CHAPTER_ID, monsterId, mode: "tutorial" })
+        }
+        onBack={() => setRoute({ kind: "menu" })}
+      />
     );
-  }
-
-  if (route.kind === "tutorial-select") {
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <TutorialSelectScreen
-            monsters={tutorialMonsters}
-            onPick={(monsterId) =>
-              setRoute({ kind: "combat", chapterId: TUTORIAL_CHAPTER_ID, monsterId, mode: "tutorial" })
-            }
-            onBack={() => setRoute({ kind: "menu" })}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+  } else if (route.kind === "encounter-intro") {
+    routeJsx = (
+      <EncounterIntroScreen
+        onBegin={() => {
+          const r1 = setLastMode(save, "encounter");
+          const r2 = incrementEncounterSessions(r1.save);
+          setSave(r2.save);
+          updatePersisted(r1.persisted && r2.persisted);
+          const m = pickNext(ENCOUNTER_POOL, null);
+          setRoute({ kind: "encounter-fight", monsterId: m.id, killsThisSession: 0 });
+        }}
+        onBack={() => setRoute({ kind: "menu" })}
+      />
     );
-  }
-
-  if (route.kind === "encounter-intro") {
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <EncounterIntroScreen
-            onBegin={() => {
-              const r1 = setLastMode(save, "encounter");
-              const r2 = incrementEncounterSessions(r1.save);
-              setSave(r2.save);
-              updatePersisted(r1.persisted && r2.persisted);
-              const m = pickNext(ENCOUNTER_POOL, null);
-              setRoute({ kind: "encounter-fight", monsterId: m.id, killsThisSession: 0 });
-            }}
-            onBack={() => setRoute({ kind: "menu" })}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
-    );
-  }
-
-  if (route.kind === "encounter-fight") {
+  } else if (route.kind === "encounter-fight") {
     const monster = findEncounterMonster(route.monsterId);
     if (!monster) return <text>Monster id "{route.monsterId}" not found — this is a bug. Press Ctrl-C to quit.</text>;
     const onTrait = buildTraitEventHandler("encounter");
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <CombatScreen
-            chapter={ENCOUNTER_CHAPTER}
-            monster={monster}
-            mode="encounter"
-            onKill={(bestRegexes) => {
-              const chapterId = chapterIdForKill(monster, WILD_CHAPTER_ID);
-              const r = recordKill(save, {
-                chapterId,
-                monsterId: monster.id,
-                bestRegexes,
-                mode: "encounter",
-              });
-              setSave(r.save); updatePersisted(r.persisted);
-              setRoute({
-                kind: "encounter-victory",
-                monsterId: monster.id,
-                killsThisSession: route.killsThisSession + 1,
-              });
-            }}
-            onFlee={() => setRoute({ kind: "menu" })}
-            onTraitEvent={onTrait}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+    routeJsx = (
+      <CombatScreen
+        chapter={ENCOUNTER_CHAPTER}
+        monster={monster}
+        mode="encounter"
+        onKill={(bestRegexes) => {
+          const chapterId = chapterIdForKill(monster, WILD_CHAPTER_ID);
+          const r = recordKill(save, {
+            chapterId,
+            monsterId: monster.id,
+            bestRegexes,
+            mode: "encounter",
+          });
+          setSave(r.save); updatePersisted(r.persisted);
+          setRoute({
+            kind: "encounter-victory",
+            monsterId: monster.id,
+            killsThisSession: route.killsThisSession + 1,
+          });
+        }}
+        onFlee={() => setRoute({ kind: "menu" })}
+        onTraitEvent={onTrait}
+      />
     );
-  }
-
-  if (route.kind === "encounter-victory") {
+  } else if (route.kind === "encounter-victory") {
     const monster = findEncounterMonster(route.monsterId);
     if (!monster) return <text>Monster id "{route.monsterId}" not found — this is a bug. Press Ctrl-C to quit.</text>;
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <EncounterVictoryScreen
-            monsterName={monster.name}
-            sessionNumber={save.encounterSessions}
-            killNumberInSession={route.killsThisSession}
-            onAdvance={() => {
-              const next = pickNext(ENCOUNTER_POOL, route.monsterId);
-              setRoute({
-                kind: "encounter-fight",
-                monsterId: next.id,
-                killsThisSession: route.killsThisSession,
-              });
-            }}
-            onBack={() => setRoute({ kind: "menu" })}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+    routeJsx = (
+      <EncounterVictoryScreen
+        monsterName={monster.name}
+        sessionNumber={save.encounterSessions}
+        killNumberInSession={route.killsThisSession}
+        onAdvance={() => {
+          const next = pickNext(ENCOUNTER_POOL, route.monsterId);
+          setRoute({
+            kind: "encounter-fight",
+            monsterId: next.id,
+            killsThisSession: route.killsThisSession,
+          });
+        }}
+        onBack={() => setRoute({ kind: "menu" })}
+      />
     );
-  }
-
-  if (route.kind === "combat") {
+  } else if (route.kind === "combat") {
     if (route.mode === "tutorial") {
       const monster = findTutorialMonster(route.monsterId);
       if (!monster) return <text>Monster id "{route.monsterId}" not found — this is a bug. Press Ctrl-C to quit.</text>;
-      return (
-        <box flexDirection="column" flexGrow={1}>
-          <box flexGrow={1}>
-            <CombatScreen
-              chapter={TUTORIAL_CHAPTER}
-              monster={monster}
-              mode="tutorial"
-              onKill={() => {
-                // Tutorial kills are intentionally not persisted.
-                setRoute({ kind: "tutorial-select" });
-              }}
-              onFlee={() => setRoute({ kind: "tutorial-select" })}
-            />
-          </box>
-          {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-        </box>
+      routeJsx = (
+        <CombatScreen
+          chapter={TUTORIAL_CHAPTER}
+          monster={monster}
+          mode="tutorial"
+          onKill={() => {
+            // Tutorial kills are intentionally not persisted.
+            setRoute({ kind: "tutorial-select" });
+          }}
+          onFlee={() => setRoute({ kind: "tutorial-select" })}
+        />
+      );
+    } else {
+      // story mode
+      const found = findStoryMonster(route.chapterId, route.monsterId);
+      if (!found) { setRoute({ kind: "menu" }); return <box />; }
+      const { chapter, monster } = found;
+      const onTrait = buildTraitEventHandler("story");
+      routeJsx = (
+        <CombatScreen
+          chapter={chapter}
+          monster={monster}
+          mode="story"
+          onKill={(bestRegexes) => {
+            const r = recordKill(save, {
+              chapterId: chapter.id,
+              monsterId: monster.id,
+              bestRegexes,
+              mode: "story",
+            });
+            setSave(r.save); updatePersisted(r.persisted);
+            setRoute({ kind: "victory", chapterId: chapter.id, monsterId: monster.id, mode: "story" });
+          }}
+          onFlee={() => setRoute({ kind: "story-select" })}
+          onTraitEvent={onTrait}
+        />
       );
     }
-    // story mode
-    const found = findStoryMonster(route.chapterId, route.monsterId);
-    if (!found) { setRoute({ kind: "menu" }); return <box />; }
-    const { chapter, monster } = found;
-    const onTrait = buildTraitEventHandler("story");
-    return (
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>
-          <CombatScreen
-            chapter={chapter}
-            monster={monster}
-            mode="story"
-            onKill={(bestRegexes) => {
-              const r = recordKill(save, {
-                chapterId: chapter.id,
-                monsterId: monster.id,
-                bestRegexes,
-                mode: "story",
-              });
-              setSave(r.save); updatePersisted(r.persisted);
-              setRoute({ kind: "victory", chapterId: chapter.id, monsterId: monster.id, mode: "story" });
-            }}
-            onFlee={() => setRoute({ kind: "story-select" })}
-            onTraitEvent={onTrait}
-          />
-        </box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+  } else {
+    // route.kind === "victory"
+    const monster =
+      route.mode === "tutorial"
+        ? findTutorialMonster(route.monsterId)
+        : (findStoryMonster(route.chapterId, route.monsterId)?.monster ?? null);
+    if (!monster) return <text>Monster id "{route.monsterId}" not found — this is a bug. Press Ctrl-C to quit.</text>;
+    routeJsx = (
+      <VictoryScreen
+        monsterName={monster.name}
+        onContinue={() =>
+          setRoute(
+            route.mode === "tutorial"
+              ? { kind: "tutorial-select" }
+              : { kind: "story-select" }
+          )
+        }
+      />
     );
   }
 
-  // route.kind === "victory"
-  const monster =
-    route.mode === "tutorial"
-      ? findTutorialMonster(route.monsterId)
-      : (findStoryMonster(route.chapterId, route.monsterId)?.monster ?? null);
-  if (!monster) return <text>Monster id "{route.monsterId}" not found — this is a bug. Press Ctrl-C to quit.</text>;
   return (
-    <box flexDirection="column" flexGrow={1}>
-      <box flexGrow={1}>
-        <VictoryScreen
-          monsterName={monster.name}
-          onContinue={() =>
-            setRoute(
-              route.mode === "tutorial"
-                ? { kind: "tutorial-select" }
-                : { kind: "story-select" }
-            )
-          }
-        />
+    <SaveProvider save={save}>
+      <box flexDirection="column" flexGrow={1}>
+        <box flexGrow={1}>{routeJsx}</box>
+        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
       </box>
-      {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-    </box>
+    </SaveProvider>
   );
 }

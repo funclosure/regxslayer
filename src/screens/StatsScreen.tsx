@@ -44,25 +44,29 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   const total = save.storyKills + save.encounterKills;
 
   return (
-    <Screen hints="[r] reset · [esc] back">
+    <Screen
+      screen="stats"
+      hints="[r] reset · [esc] back"
+      footer={
+        confirming
+          ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
+          : null
+      }
+    >
       <box flexDirection="column" gap={0}>
         <text>STATS</text>
         <text>─────</text>
         <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
         <text>Sessions: {save.encounterSessions} encounter runs</text>
       </box>
+      <text> </text>
       <box flexDirection="column" gap={0}>
         <text>Trait practice (sorted: needs-practice → strong)</text>
         <text>─────────────────────────────────────────────────</text>
-      </box>
-      <scrollbox flexGrow={1}>
         {rows.map((r) => (
           <text key={r.trait}>{renderStatsRowText(r.trait, r.stat)}</text>
         ))}
-      </scrollbox>
-      {confirming
-        ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
-        : null}
+      </box>
     </Screen>
   );
 }

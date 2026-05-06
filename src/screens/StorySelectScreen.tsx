@@ -52,36 +52,34 @@ export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: Sto
   }, { global: true });
 
   return (
-    <Screen hints="[↑↓] move · [⏎] enter · [esc] back">
+    <Screen screen="story" hints="[↑↓] move · [⏎] enter · [esc] back">
       <box flexDirection="column" gap={0}>
         <text>Choose your fight</text>
         <text>─────────────────</text>
       </box>
-      <scrollbox flexGrow={1}>
-        {chapters.map((c, ci) => {
-          const unlocked = isChapterUnlocked(save, chapters, ci);
-          const total = c.monsters.length;
-          const slain = c.monsters.filter((m) => isSlain(save, c.id, m.id)).length;
-          const head = unlocked
-            ? `${c.title} — ${slain}/${total} slain`
-            : `${c.title} (locked)`;
-          return (
-            <box flexDirection="column" key={c.id}>
-              <text>{head}</text>
-              {unlocked
-                ? c.monsters.map((m) => {
-                    const e = entries.findIndex((x) => x.chapter.id === c.id && x.monster.id === m.id);
-                    const cur = e === idx;
-                    const mark = isSlain(save, c.id, m.id) ? "✓" : "·";
-                    return (
-                      <text key={m.id}>{cur ? "▶ " : "  "}{mark} {m.name}</text>
-                    );
-                  })
-                : null}
-            </box>
-          );
-        })}
-      </scrollbox>
+      {chapters.map((c, ci) => {
+        const unlocked = isChapterUnlocked(save, chapters, ci);
+        const total = c.monsters.length;
+        const slain = c.monsters.filter((m) => isSlain(save, c.id, m.id)).length;
+        const head = unlocked
+          ? `${c.title} — ${slain}/${total} slain`
+          : `${c.title} (locked)`;
+        return (
+          <box flexDirection="column" key={c.id}>
+            <text>{head}</text>
+            {unlocked
+              ? c.monsters.map((m) => {
+                  const e = entries.findIndex((x) => x.chapter.id === c.id && x.monster.id === m.id);
+                  const cur = e === idx;
+                  const mark = isSlain(save, c.id, m.id) ? "✓" : "·";
+                  return (
+                    <text key={m.id}>{cur ? "▶ " : "  "}{mark} {m.name}</text>
+                  );
+                })
+              : null}
+          </box>
+        );
+      })}
     </Screen>
   );
 }
