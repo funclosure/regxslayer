@@ -20,7 +20,7 @@ export function formatFeedback(props: FeedbackLineProps): { numeric: string; sym
 export function FeedbackLine(props: FeedbackLineProps): React.ReactElement {
   const { numeric, symbolic } = formatFeedback(props);
   return (
-    <box flexDirection="column">
+    <box flexDirection="column" flexShrink={0}>
       <text>{numeric}</text>
       <text>{symbolic}</text>
     </box>

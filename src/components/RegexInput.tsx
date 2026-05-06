@@ -12,7 +12,7 @@ export function RegexInput({ value, onChange, invalid }: RegexInputProps): React
   // alone wasn't taking effect (the input still collapsed to ~3 cells and
   // ate leading characters as you typed past the visible width).
   return (
-    <box flexDirection="column" width="100%">
+    <box flexDirection="column" width="100%" flexShrink={0}>
       <box flexDirection="row" gap={1} width="100%">
         <text>▶</text>
         <box flexGrow={1}>

@@ -67,7 +67,7 @@ export function StatusBar({ screen, hints }: StatusBarProps): React.ReactElement
   const { width } = useTerminalDimensions();
   const { slain, sessions } = useSaveLifetime();
   return (
-    <box flexDirection="column" width="100%">
+    <box flexDirection="column" width="100%" flexShrink={0}>
       <text>{formatStatusInfoRow(BRAND, screen, slain, sessions, width)}</text>
       <text>{formatStatusHintRow(hints, width)}</text>
     </box>
