@@ -29,6 +29,20 @@ export function buildMenuItems(save: SaveFile): MenuItem[] {
   return items;
 }
 
+const CHAPTER_BOX_TOP    = "┌─ chapters ──────────┐";
+const CHAPTER_BOX_BOTTOM = "└─────────────────────┘";
+
+export function buildChapterRows(save: SaveFile): string[] {
+  const body = CHAPTERS.map((c, i) => {
+    const slain = Object.keys(save.chapters[c.id]?.monsters ?? {}).length;
+    const filled = Math.min(slain, 4);
+    const bar = "█".repeat(filled) + "░".repeat(4 - filled);
+    const inner = ` ${i + 1} ${c.short.padEnd(8)} ${bar} ${slain}/${c.total} `;
+    return `│${inner}│`;
+  });
+  return [CHAPTER_BOX_TOP, ...body, CHAPTER_BOX_BOTTOM];
+}
+
 export function navigateMenu(itemCount: number, currentIdx: number, direction: "up" | "down"): number {
   if (itemCount <= 0) return 0;
   return direction === "down"

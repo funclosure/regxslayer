@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel } from "@/screens/MenuScreen";
+import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -92,5 +92,51 @@ describe("CHAPTERS constant", () => {
       expect(entry.total).toBe(modules[i]!.monsters.length);
       expect(entry.id).toBe(modules[i]!.id);
     });
+  });
+});
+
+const stubRecord = () => ({ slainAt: "2026-05-06T00:00:00Z", bestRegexes: {} });
+
+describe("buildChapterRows", () => {
+  test("renders empty save with all zero bars", () => {
+    const rows = buildChapterRows(empty);
+    expect(rows).toEqual([
+      "┌─ chapters ──────────┐",
+      "│ 1 Literals ░░░░ 0/4 │",
+      "│ 2 Classes  ░░░░ 0/4 │",
+      "│ 3 Quants   ░░░░ 0/4 │",
+      "└─────────────────────┘",
+    ]);
+  });
+
+  test("fills bars from chapter records", () => {
+    const save: SaveFile = {
+      ...empty,
+      chapters: {
+        "literals-anchors": { monsters: { a: stubRecord(), b: stubRecord(), c: stubRecord(), d: stubRecord() } },
+        "char-classes":     { monsters: { a: stubRecord(), b: stubRecord() } },
+      },
+    };
+    const rows = buildChapterRows(save);
+    expect(rows[1]).toBe("│ 1 Literals ████ 4/4 │");
+    expect(rows[2]).toBe("│ 2 Classes  ██░░ 2/4 │");
+    expect(rows[3]).toBe("│ 3 Quants   ░░░░ 0/4 │");
+  });
+
+  test("clamps overflow chapters to the 4-cell bar width", () => {
+    const overfilled: Record<string, ReturnType<typeof stubRecord>> = {};
+    for (let i = 0; i < 6; i++) overfilled[`m${i}`] = stubRecord();
+    const save: SaveFile = {
+      ...empty,
+      chapters: { "literals-anchors": { monsters: overfilled } },
+    };
+    const rows = buildChapterRows(save);
+    expect(rows[1]).toBe("│ 1 Literals ████ 6/4 │");
+  });
+
+  test("every row is the same outer width (23)", () => {
+    const rows = buildChapterRows(empty);
+    expect(new Set(rows.map((r) => [...r].length)).size).toBe(1);
+    expect([...rows[0]!].length).toBe(23);
   });
 });
