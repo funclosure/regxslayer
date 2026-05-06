@@ -4,6 +4,7 @@ import { TRAITS } from "@/game/traits";
 import { classify, sortTraits } from "@/game/stats";
 import type { SaveFile, TraitStat } from "@/game/types";
 import type { Trait } from "@/game/traits";
+import { Screen } from "@/components/Screen";
 
 export type StatsScreenProps = {
   save: SaveFile;
@@ -43,7 +44,7 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   const total = save.storyKills + save.encounterKills;
 
   return (
-    <box flexDirection="column" padding={1} gap={0}>
+    <Screen>
       <text>STATS  ([esc] back)</text>
       <text>───────────────────</text>
       <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
@@ -58,6 +59,6 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
       {confirming
         ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
         : <text>[r] reset stats     [esc] back</text>}
-    </box>
+    </Screen>
   );
 }

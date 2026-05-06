@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
 import type { Monster } from "@/game/types";
+import { Screen } from "@/components/Screen";
 
 export type TutorialSelectProps = {
   monsters: Monster[];
@@ -23,7 +24,7 @@ export function TutorialSelectScreen({ monsters, onPick, onBack }: TutorialSelec
   }, { global: true });
 
   return (
-    <box flexDirection="column" padding={1} gap={0}>
+    <Screen>
       <text>Tutorial — pick a teacher  ([esc] back)</text>
       <text>──────────────────────────────────────</text>
       {monsters.map((m, i) => (
@@ -31,6 +32,6 @@ export function TutorialSelectScreen({ monsters, onPick, onBack }: TutorialSelec
       ))}
       <text> </text>
       <text>(tutorials are replayable; they don't track progress or feed stats)</text>
-    </box>
+    </Screen>
   );
 }

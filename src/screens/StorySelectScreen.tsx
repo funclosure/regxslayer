@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
 import type { Chapter, SaveFile } from "@/game/types";
+import { Screen } from "@/components/Screen";
 
 export type StorySelectProps = {
   chapters: Chapter[];
@@ -51,7 +52,7 @@ export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: Sto
   }, { global: true });
 
   return (
-    <box flexDirection="column" padding={1} gap={0}>
+    <Screen>
       <text>Choose your fight  ([esc] back)</text>
       <text>──────────────────────────────</text>
       {chapters.map((c, ci) => {
@@ -77,6 +78,6 @@ export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: Sto
           </box>
         );
       })}
-    </box>
+    </Screen>
   );
 }
