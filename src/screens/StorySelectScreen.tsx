@@ -52,7 +52,7 @@ export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: Sto
   }, { global: true });
 
   return (
-    <Screen>
+    <Screen centerVertically>
       <text>Choose your fight  ([esc] back)</text>
       <text>──────────────────────────────</text>
       {chapters.map((c, ci) => {

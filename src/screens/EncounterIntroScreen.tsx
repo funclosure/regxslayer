@@ -14,7 +14,7 @@ export function EncounterIntroScreen({ onBegin, onBack }: EncounterIntroProps): 
   }, { global: true });
 
   return (
-    <Screen>
+    <Screen centerVertically>
       <box flexDirection="column" gap={1}>
         <text>WILD ENCOUNTER MODE</text>
         <text>───────────────────</text>

@@ -24,7 +24,7 @@ export function TutorialSelectScreen({ monsters, onPick, onBack }: TutorialSelec
   }, { global: true });
 
   return (
-    <Screen>
+    <Screen centerVertically>
       <text>Tutorial — pick a teacher  ([esc] back)</text>
       <text>──────────────────────────────────────</text>
       {monsters.map((m, i) => (

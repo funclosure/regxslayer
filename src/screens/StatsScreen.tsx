@@ -44,7 +44,7 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   const total = save.storyKills + save.encounterKills;
 
   return (
-    <Screen>
+    <Screen centerVertically>
       <text>STATS  ([esc] back)</text>
       <text>───────────────────</text>
       <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
