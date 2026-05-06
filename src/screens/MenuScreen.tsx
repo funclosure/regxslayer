@@ -111,13 +111,9 @@ export function buildLandingRows(save: SaveFile, items: MenuItem[], selectedIdx:
 
   return [
     ...titleRows.map(center),
-    "",
     ...centeredBand,
-    "",
     center(TAGLINE),
-    "",
     ...centeredMenu,
-    "",
     center(buildBottomLine(save)),
   ];
 }
@@ -143,7 +139,7 @@ export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElem
   }, { global: true });
 
   return (
-    <box flexDirection="column" flexGrow={1} padding={2} alignItems="center" justifyContent="center">
+    <box flexDirection="column" flexGrow={1} alignItems="center">
       <box flexDirection="column" width={width}>
         {rows.map((row, i) => (
           <text key={`row:${i}:${row}`}>{row}</text>

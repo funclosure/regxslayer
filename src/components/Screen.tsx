@@ -35,7 +35,7 @@ export function Screen({
   return (
     <box flexDirection="column" flexGrow={1} width="100%">
       <scrollbox flexGrow={1}>
-        <box flexDirection="column" alignItems="center" padding={2}>
+        <box flexDirection="column" alignItems="center">
           <box flexDirection="column" width={width}>
             {children}
           </box>

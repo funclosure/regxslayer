@@ -5,7 +5,7 @@ import { useTerminalDimensions } from "@gridland/utils";
 import { App } from "./app";
 
 const MIN_COLS = 80;
-const MIN_ROWS = 24;
+const MIN_ROWS = 20;
 
 function Root(): React.ReactElement {
   const { width, height } = useTerminalDimensions();
