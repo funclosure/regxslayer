@@ -26,8 +26,8 @@ export function TutorialSelectScreen({ monsters, onPick, onBack }: TutorialSelec
   return (
     <Screen hints="[↑↓] move · [⏎] start · [esc] back">
       <box flexDirection="column" gap={0}>
-        <text>Tutorial — pick a teacher  ([esc] back)</text>
-        <text>──────────────────────────────────────</text>
+        <text>Tutorial — pick a teacher</text>
+        <text>─────────────────────────</text>
         {monsters.map((m, i) => (
           <text key={m.id}>{i === idx ? "▶ " : "  "}{m.name}</text>
         ))}

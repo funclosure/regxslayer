@@ -5,7 +5,11 @@ export const BRAND = "regxslayer";
 
 const DASH_PADDING = 3;       // dashes flanking each side
 const SPACE_PADDING = 4;      // 2 spaces around brand + 2 around hints
-const MIN_MIDDLE_DASHES = 2;  // visual minimum between brand and hints
+// Visual minimum between brand and hints — guarantees a visible gap so the
+// chrome reads as `─── brand ── hints ───` rather than `─── brand hints ───`.
+// Together with the side padding this gives the spec's "8 dashes + 4 spaces"
+// = 12 minimum overhead between brand and hints lengths.
+const MIN_MIDDLE_DASHES = 2;
 
 /**
  * Pure builder for the chrome row text. Falls back to empty-hints form

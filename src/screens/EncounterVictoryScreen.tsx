@@ -29,7 +29,7 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
     <Screen hints="any key advances · [esc] menu">
       <box flexDirection="column" gap={0}>
         <text>SLAIN</text>
-        <text>───────────────</text>
+        <text>─────</text>
       </box>
       <text>{monsterName}</text>
       <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>

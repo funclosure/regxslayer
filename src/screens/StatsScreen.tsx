@@ -46,8 +46,8 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   return (
     <Screen hints="[r] reset · [esc] back">
       <box flexDirection="column" gap={0}>
-        <text>STATS  ([esc] back)</text>
-        <text>───────────────────</text>
+        <text>STATS</text>
+        <text>─────</text>
         <text>Lifetime: {total} monsters slain (story {save.storyKills} · encounter {save.encounterKills})</text>
         <text>Sessions: {save.encounterSessions} encounter runs</text>
       </box>

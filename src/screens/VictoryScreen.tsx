@@ -16,7 +16,7 @@ export function VictoryScreen({ monsterName, onContinue }: VictoryScreenProps): 
     <Screen hints="[⏎] continue">
       <box flexDirection="column" gap={0}>
         <text>VICTORY</text>
-        <text>───────────────</text>
+        <text>───────</text>
       </box>
       <text>{monsterName} has fallen.</text>
       <box flexGrow={1} />

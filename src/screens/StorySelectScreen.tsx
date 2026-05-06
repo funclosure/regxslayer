@@ -54,8 +54,8 @@ export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: Sto
   return (
     <Screen hints="[↑↓] move · [⏎] enter · [esc] back">
       <box flexDirection="column" gap={0}>
-        <text>Choose your fight  ([esc] back)</text>
-        <text>──────────────────────────────</text>
+        <text>Choose your fight</text>
+        <text>─────────────────</text>
       </box>
       <scrollbox flexGrow={1}>
         {chapters.map((c, ci) => {
