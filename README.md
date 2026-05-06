@@ -4,6 +4,8 @@ A terminal regex-practice game. Each monster is a layered text body — write a
 regex that surgically matches the right strings to peel layers, then strike the
 heart for the kill.
 
+![regxslayer main menu — block-letter REGXSLAYER banner with monster art and chapter progress](docs/menu.png)
+
 ## Modes
 
 - **Story** — 3 chapters of 4 monsters each. Unlocks chapter-by-chapter as you
