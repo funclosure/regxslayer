@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, buildBottomLine } from "@/screens/MenuScreen";
+import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, buildBottomLine, MONSTER_ART } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -42,8 +42,8 @@ describe("buildLandingRows", () => {
     expect(rows.some((row) => row.includes(".----."))).toBe(true);
     expect(rows.some((row) => row.includes("┌─ chapters"))).toBe(true);
     expect(rows.map((row) => row.trim())).toContain("precision is damage");
-    expect(rows.map((row) => row.trimEnd())).toContain("▶ Continue   (last: story)");
-    expect(rows.map((row) => row.trimEnd())).toContain("  Story");
+    expect(rows.map((row) => row.trim())).toContain("▶ Continue   (last: story)");
+    expect(rows.map((row) => row.trim())).toContain("Story");
     expect(rows.some((row) => row.includes("5 slain · 0 sessions"))).toBe(true);
   });
 
@@ -58,6 +58,10 @@ describe("buildLandingRows", () => {
     const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
     const bandRow = rows.find((row) => row.includes(".----.") && row.includes("┌─ chapters"));
     expect(bandRow).toBeDefined();
+  });
+
+  test("monster art and chapter box have matching row counts (band drift guard)", () => {
+    expect(MONSTER_ART.length).toBe(buildChapterRows(empty).length);
   });
 
   test("removes the legacy [^filler] / \\w+ / ^heart$ regex annotations", () => {

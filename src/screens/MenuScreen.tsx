@@ -67,7 +67,7 @@ const TITLE_ART = [
   "|_| \\_\\_____\\____|/_/\\_\\____/|____/_/   \\_\\_| |_____|_| \\_\\",
 ];
 
-const MONSTER_ART = [
+export const MONSTER_ART = [
   "          .----.",
   "      ___/ .  . \\___",
   "     /   \\  --  /   \\",
@@ -85,6 +85,12 @@ function padRows(rows: string[], width: number): string[] {
   return rows.map((row) => row.padEnd(width, " "));
 }
 
+function centerPad(row: string, width: number): string {
+  const slack = Math.max(0, width - row.length);
+  const left = Math.floor(slack / 2);
+  return " ".repeat(left) + row;
+}
+
 export function buildMenuRows(items: MenuItem[], selectedIdx: number): string[] {
   const rows = items.map((it, i) => `${i === selectedIdx ? "▶" : " "} ${it.label}`);
   const width = Math.max(...rows.map((row) => row.length), 0);
@@ -95,18 +101,24 @@ export function buildLandingRows(save: SaveFile, items: MenuItem[], selectedIdx:
   const titleRows   = padRows(TITLE_ART, TITLE_WIDTH);
   const chapterRows = buildChapterRows(save);
   const monsterRows = padRows(MONSTER_ART, MONSTER_WIDTH);
-  const bandRows = monsterRows.map((row, i) => row + BAND_GAP + (chapterRows[i] ?? ""));
-  const menuRows = buildMenuRows(items, selectedIdx);
+  const bandRows    = monsterRows.map((row, i) => row + BAND_GAP + (chapterRows[i] ?? ""));
+  const bandWidth   = MONSTER_WIDTH + BAND_GAP.length + (chapterRows[0]?.length ?? 0);
+  const screenWidth = Math.max(TITLE_WIDTH, bandWidth);
+
+  const center = (row: string) => centerPad(row, screenWidth);
+  const centeredBand = bandRows.map((row) => centerPad(row, screenWidth));
+  const centeredMenu = buildMenuRows(items, selectedIdx).map(center);
+
   return [
-    ...titleRows,
+    ...titleRows.map(center),
     "",
-    ...bandRows,
+    ...centeredBand,
     "",
-    TAGLINE,
+    center(TAGLINE),
     "",
-    ...menuRows,
+    ...centeredMenu,
     "",
-    buildBottomLine(save),
+    center(buildBottomLine(save)),
   ];
 }
 
