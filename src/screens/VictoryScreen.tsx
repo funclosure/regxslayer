@@ -1,5 +1,6 @@
 import React from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
+import { Screen } from "@/components/Screen";
 
 export type VictoryScreenProps = {
   monsterName: string;
@@ -12,11 +13,13 @@ export function VictoryScreen({ monsterName, onContinue }: VictoryScreenProps): 
   }, { global: true });
 
   return (
-    <box flexDirection="column" padding={2} gap={1} alignItems="center">
-      <text>VICTORY</text>
-      <text>{monsterName} has fallen.</text>
-      <text>───────────────</text>
-      <text>press ⏎ to continue</text>
-    </box>
+    <Screen centerVertically>
+      <box flexDirection="column" gap={1} alignItems="center">
+        <text>VICTORY</text>
+        <text>{monsterName} has fallen.</text>
+        <text>───────────────</text>
+        <text>press ⏎ to continue</text>
+      </box>
+    </Screen>
   );
 }

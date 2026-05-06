@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
+import { Screen } from "@/components/Screen";
 
 export type EncounterVictoryProps = {
   monsterName: string;
@@ -25,13 +26,15 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
   }, [autoAdvanceMs, onAdvance]);
 
   return (
-    <box flexDirection="column" padding={2} gap={1} alignItems="center">
-      <text>SLAIN</text>
-      <text>{monsterName}</text>
-      <text>───────────────</text>
-      <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
-      <text> </text>
-      <text>any key advances · [esc] main menu</text>
-    </box>
+    <Screen centerVertically>
+      <box flexDirection="column" gap={1} alignItems="center">
+        <text>SLAIN</text>
+        <text>{monsterName}</text>
+        <text>───────────────</text>
+        <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
+        <text> </text>
+        <text>any key advances · [esc] main menu</text>
+      </box>
+    </Screen>
   );
 }
