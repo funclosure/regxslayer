@@ -34,7 +34,6 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
       <text>{monsterName}</text>
       <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
       <box flexGrow={1} />
-      <text>any key advances · [esc] main menu</text>
     </Screen>
   );
 }

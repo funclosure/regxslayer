@@ -20,7 +20,6 @@ export function VictoryScreen({ monsterName, onContinue }: VictoryScreenProps): 
       </box>
       <text>{monsterName} has fallen.</text>
       <box flexGrow={1} />
-      <text>press ⏎ to continue</text>
     </Screen>
   );
 }

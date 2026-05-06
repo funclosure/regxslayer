@@ -62,7 +62,7 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
       </scrollbox>
       {confirming
         ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
-        : <text>[r] reset stats     [esc] back</text>}
+        : null}
     </Screen>
   );
 }

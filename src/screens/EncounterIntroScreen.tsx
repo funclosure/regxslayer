@@ -23,7 +23,6 @@ export function EncounterIntroScreen({ onBegin, onBack }: EncounterIntroProps): 
       <text>Slay one and the next appears immediately.</text>
       <text>[esc] flees back to main menu.</text>
       <box flexGrow={1} />
-      <text>[⏎] begin     [esc] back</text>
     </Screen>
   );
 }
