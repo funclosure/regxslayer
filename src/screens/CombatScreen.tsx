@@ -114,6 +114,7 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
           inHeart={inHeart}
           matchedKeys={engine.evalResult?.matchedLineKeys ?? new Set<string>()}
           matchedRanges={engine.evalResult?.matchedRanges}
+          heartKilled={engine.state.phase.kind === "kill"}
         />
         {engine.state.phase.kind === "kill" ? (
           <ShimmerBanner

@@ -15,6 +15,8 @@ export type BodyViewProps = {
   matchedKeys: ReadonlySet<string>;
   /** Per-line match ranges (start, end) for substring highlighting. Empty array = matched but no underlineable substring (e.g. ^/$ anchor). */
   matchedRanges?: ReadonlyMap<string, ReadonlyArray<MatchRange>>;
+  /** True during the kill phase: render the heart row as a stripped vital (green + dim + strike). */
+  heartKilled?: boolean;
 };
 
 export type BodyRow = {
@@ -27,6 +29,9 @@ export type BodyRow = {
   matchKind: "vital" | "collateral";
   /** True when this row's layer has been stripped — renders dim + strikethrough. */
   stripped: boolean;
+  /** Original vitality of the line (independent of layer state). Stripped vitals
+   *  render in POSITIVE_COLOR so the kill is celebrated visually. */
+  vital: boolean;
 };
 
 /** Pure formatter for one body row, exported for testing.
@@ -41,17 +46,31 @@ export function formatBodyRow(args: {
   stripped: ReadonlySet<number>;
   inHeart: boolean;
   matchedKeys: ReadonlySet<string>;
+  heartKilled?: boolean;
 }): BodyRow {
-  const { kind, layerIdx, lineIdx, text, vital, activeLayerIdx, stripped, inHeart, matchedKeys } = args;
+  const { kind, layerIdx, lineIdx, text, vital, activeLayerIdx, stripped, inHeart, matchedKeys, heartKilled } = args;
 
   if (kind === "heart") {
     const matched = matchedKeys.has("heart");
+    if (heartKilled) {
+      // Heart kill = treat the heart row identically to a stripped vital so it
+      // gets the same green + dim + strike celebration.
+      return {
+        gutter: "·",
+        text,
+        matched,
+        matchKind: "vital",
+        stripped: true,
+        vital,
+      };
+    }
     return {
       gutter: inHeart ? "♦" : " ",
       text,
       matched,
       matchKind: inHeart ? "vital" : "collateral",
       stripped: false,
+      vital,
     };
   }
 
@@ -76,6 +95,7 @@ export function formatBodyRow(args: {
     matched,
     matchKind,
     stripped: isStripped,
+    vital,
   };
 }
 
@@ -106,18 +126,18 @@ export function splitByRanges(text: string, ranges: ReadonlyArray<MatchRange>): 
 }
 
 export function BodyView(props: BodyViewProps): React.ReactElement {
-  const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys, matchedRanges } = props;
+  const { monster, activeLayerIdx, strippedIdxs, inHeart, matchedKeys, matchedRanges, heartKilled } = props;
   const stripped = new Set(strippedIdxs);
   const ranges = matchedRanges ?? new Map<string, ReadonlyArray<MatchRange>>();
 
   const renderRow = (key: string | number, lineKey: string, row: BodyRow): React.ReactElement => {
-    // Stripped rows: dim + strikethrough on the whole line, ignore match colors.
+    // Stripped rows: dim + strikethrough; stripped vitals also get POSITIVE_COLOR
+    // so the kill remains visually distinct from collateral fillers.
     if (row.stripped) {
-      const strippedText = React.createElement(
-        "span",
-        { style: { attributes: ATTR_STRIPPED } },
-        row.text,
-      );
+      const style = row.vital
+        ? { fg: POSITIVE_COLOR, attributes: ATTR_STRIPPED }
+        : { attributes: ATTR_STRIPPED };
+      const strippedText = React.createElement("span", { style }, row.text);
       return (
         <text key={key}>
           {row.gutter} {strippedText}
@@ -159,9 +179,9 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
   };
 
   return (
-    <box flexDirection="column">
+    <box flexDirection="column" flexShrink={0}>
       {monster.layers.map((layer, li) => (
-        <box flexDirection="column" key={li}>
+        <box flexDirection="column" key={li} flexShrink={0}>
           {layer.lines.map((line, i) => {
             const row = formatBodyRow({
               kind: "layer",
@@ -189,6 +209,7 @@ export function BodyView(props: BodyViewProps): React.ReactElement {
           stripped,
           inHeart,
           matchedKeys,
+          heartKilled,
         });
         return renderRow("heart", "heart", row);
       })()}

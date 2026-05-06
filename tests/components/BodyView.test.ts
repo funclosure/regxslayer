@@ -13,26 +13,26 @@ describe("formatBodyRow — layer rows", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 0, text: "alpha", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: "♦", text: "alpha", matched: false, matchKind: "vital", stripped: false });
+    expect(r).toEqual({ gutter: "♦", text: "alpha", matched: false, matchKind: "vital", stripped: false, vital: true });
   });
   test("active filler line: blank gutter", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 1, text: "noise", vital: false, ...base,
     });
-    expect(r).toEqual({ gutter: " ", text: "noise", matched: false, matchKind: "collateral", stripped: false });
+    expect(r).toEqual({ gutter: " ", text: "noise", matched: false, matchKind: "collateral", stripped: false, vital: false });
   });
   test("locked layer rows: ⛓ gutter, collateral if matched", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 1, lineIdx: 0, text: "gamma", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: "⛓", text: "gamma", matched: false, matchKind: "collateral", stripped: false });
+    expect(r).toEqual({ gutter: "⛓", text: "gamma", matched: false, matchKind: "collateral", stripped: false, vital: true });
   });
   test("stripped layer rows: stripped flag set, · gutter marker (theme-safe)", () => {
     const r = formatBodyRow({
       kind: "layer", layerIdx: 0, lineIdx: 0, text: "alpha", vital: true,
       ...base, stripped: new Set([0]), activeLayerIdx: 1,
     });
-    expect(r).toEqual({ gutter: "·", text: "alpha", matched: false, matchKind: "collateral", stripped: true });
+    expect(r).toEqual({ gutter: "·", text: "alpha", matched: false, matchKind: "collateral", stripped: true, vital: true });
   });
   test("active vital line, matched: matched=true, matchKind=vital, text unchanged (no jitter brackets)", () => {
     const r = formatBodyRow({
@@ -66,14 +66,14 @@ describe("formatBodyRow — heart row", () => {
     const r = formatBodyRow({
       kind: "heart", layerIdx: -1, lineIdx: -1, text: "HEART", vital: true, ...base,
     });
-    expect(r).toEqual({ gutter: " ", text: "HEART", matched: false, matchKind: "collateral", stripped: false });
+    expect(r).toEqual({ gutter: " ", text: "HEART", matched: false, matchKind: "collateral", stripped: false, vital: true });
   });
   test("in heart phase: ♦ gutter, vital matchKind", () => {
     const r = formatBodyRow({
       kind: "heart", layerIdx: -1, lineIdx: -1, text: "HEART", vital: true,
       ...base, inHeart: true,
     });
-    expect(r).toEqual({ gutter: "♦", text: "HEART", matched: false, matchKind: "vital", stripped: false });
+    expect(r).toEqual({ gutter: "♦", text: "HEART", matched: false, matchKind: "vital", stripped: false, vital: true });
   });
   test("matched heart in heart phase: text unchanged, matched=true, matchKind=vital", () => {
     const r = formatBodyRow({

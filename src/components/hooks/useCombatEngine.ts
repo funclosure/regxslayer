@@ -45,9 +45,19 @@ export function useCombatEngine(opts: UseCombatEngineOpts): CombatEngine {
   const seenNonPerfectTraits = useRef<Set<Trait>>(new Set());
   const lastLayerKey = useRef<string>("");
 
+  // Cache the most recent eval result so the strip phase can keep showing
+  // the matched-vital highlight (green underline) during the banner animation.
+  // Without this, evalResult goes null the moment the strip phase begins and
+  // BodyView's matchedKeys empties, dropping the celebration color.
+  const lastActiveEval = useRef<EvalResult | null>(null);
   const evalResult = useMemo<EvalResult | null>(() => {
     if (state.phase.kind === "layerActive" || state.phase.kind === "heart") {
-      return evaluate({ pattern, monster: opts.monster, phase: state.phase });
+      const result = evaluate({ pattern, monster: opts.monster, phase: state.phase });
+      lastActiveEval.current = result;
+      return result;
+    }
+    if (state.phase.kind === "strip" || state.phase.kind === "kill") {
+      return lastActiveEval.current;
     }
     return null;
   }, [pattern, state.phase, opts.monster]);
@@ -101,11 +111,13 @@ export function useCombatEngine(opts: UseCombatEngineOpts): CombatEngine {
     // Heart phase: no per-trait events for v2 (heart uses the monster's union — recorded via recordKill instead).
   }, [evalResult, pattern, state.phase, opts.monster, opts.onTraitEvent]);
 
-  // Advance state on perfect (layer or heart).
+  // Advance state on perfect (layer or heart). Gated on phase so the cached
+  // evalResult retained during the strip phase doesn't retrigger this.
   useEffect(() => {
     if (!evalResult || !evalResult.perfect) return;
+    if (state.phase.kind !== "layerActive" && state.phase.kind !== "heart") return;
     setState((s) => advance(s, { kind: "perfectMatch", pattern }));
-  }, [evalResult, pattern]);
+  }, [evalResult, pattern, state.phase]);
 
   // Strip animation timer.
   useEffect(() => {
