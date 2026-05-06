@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu } from "@/screens/MenuScreen";
+import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
+import { chapter as ch1 } from "@/content/chapter-1-literals";
+import { chapter as ch2 } from "@/content/chapter-2-charclasses";
+import { chapter as ch3 } from "@/content/chapter-3-quantifiers";
 
 const empty: SaveFile = {
   version: 2, createdAt: "", updatedAt: "",
@@ -52,5 +55,23 @@ describe("buildLandingRows", () => {
     expect(new Set(rows.map((row) => row.length)).size).toBe(1);
     expect(rows[0]!.startsWith("▶ Continue")).toBe(true);
     expect(rows[1]!.startsWith("  Story")).toBe(true);
+  });
+});
+
+describe("CHAPTERS constant", () => {
+  test("ids match the three story chapters in display order", () => {
+    expect(CHAPTERS.map((c) => c.id)).toEqual([
+      "literals-anchors",
+      "char-classes",
+      "quantifiers",
+    ]);
+  });
+
+  test("totals match each chapter module's monsters length (drift guard)", () => {
+    const modules = [ch1, ch2, ch3];
+    CHAPTERS.forEach((entry, i) => {
+      expect(entry.total).toBe(modules[i]!.monsters.length);
+      expect(entry.id).toBe(modules[i]!.id);
+    });
   });
 });

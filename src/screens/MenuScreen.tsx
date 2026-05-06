@@ -6,6 +6,12 @@ export type MenuChoice = "continue" | "story" | "encounter" | "tutorial" | "stat
 
 export type MenuItem = { key: MenuChoice; label: string };
 
+export const CHAPTERS: ReadonlyArray<{ id: string; short: string; total: number }> = [
+  { id: "literals-anchors", short: "Literals", total: 4 },
+  { id: "char-classes",     short: "Classes",  total: 4 },
+  { id: "quantifiers",      short: "Quants",   total: 4 },
+];
+
 export function buildMenuItems(save: SaveFile): MenuItem[] {
   const items: MenuItem[] = [];
   if (save.lastMode !== null) items.push({ key: "continue", label: "Continue" });
