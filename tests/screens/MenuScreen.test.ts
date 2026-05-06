@@ -35,21 +35,44 @@ describe("navigateMenu", () => {
 });
 
 describe("buildLandingRows", () => {
-  test("renders the pixel title, monster art, tagline, and selectable menu rows", () => {
-    const rows = buildLandingRows(buildMenuItems({ ...empty, lastMode: "story" }), 0);
+  test("renders title, monster, tagline, chapter box, menu, and bottom line", () => {
+    const save: SaveFile = { ...empty, lastMode: "story", storyKills: 5 };
+    const rows = buildLandingRows(save, buildMenuItems(save), 0);
     expect(rows.some((row) => row.includes("____  _____"))).toBe(true);
-    expect(rows.some((row) => row.includes("[^filler]"))).toBe(true);
-    expect(rows.some((row) => row.includes("^heart$"))).toBe(true);
+    expect(rows.some((row) => row.includes(".----."))).toBe(true);
+    expect(rows.some((row) => row.includes("┌─ chapters"))).toBe(true);
     expect(rows.map((row) => row.trim())).toContain("precision is damage");
     expect(rows.map((row) => row.trimEnd())).toContain("▶ Continue   (last: story)");
     expect(rows.map((row) => row.trimEnd())).toContain("  Story");
+    expect(rows.some((row) => row.includes("5 slain · 0 sessions"))).toBe(true);
+  });
+
+  test("hides Continue and shows welcome bottom line on a fresh save", () => {
+    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
+    expect(rows.some((row) => row.includes("Continue"))).toBe(false);
+    expect(rows.some((row) => row.includes("[↑↓] move · [enter] choose · [q] quit"))).toBe(true);
+    expect(rows.some((row) => row.includes("░░░░ 0/4"))).toBe(true);
+  });
+
+  test("monster band joins monster art with chapter box row-for-row", () => {
+    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
+    const bandRow = rows.find((row) => row.includes(".----.") && row.includes("┌─ chapters"));
+    expect(bandRow).toBeDefined();
+  });
+
+  test("removes the legacy [^filler] / \\w+ / ^heart$ regex annotations", () => {
+    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
+    expect(rows.some((row) => row.includes("[^filler]"))).toBe(false);
+    expect(rows.some((row) => row.includes("^heart$"))).toBe(false);
   });
 
   test("keeps every landing row within the minimum terminal width", () => {
-    const rows = buildLandingRows(buildMenuItems({ ...empty, lastMode: "story" }), 0);
+    const rows = buildLandingRows({ ...empty, lastMode: "story" }, buildMenuItems({ ...empty, lastMode: "story" }), 0);
     expect(Math.max(...rows.map((row) => row.length))).toBeLessThanOrEqual(76);
   });
+});
 
+describe("buildMenuRows", () => {
   test("left-aligns options inside the centered menu block", () => {
     const rows = buildMenuRows(buildMenuItems({ ...empty, lastMode: "story" }), 0);
     expect(new Set(rows.map((row) => row.length)).size).toBe(1);

@@ -59,24 +59,27 @@ export function navigateMenu(itemCount: number, currentIdx: number, direction: "
     : (currentIdx + itemCount - 1) % itemCount;
 }
 
-const LANDING_ART = [
+const TITLE_ART = [
   " ____  _____ ____ __  __ ____  _      _ __   _______ ____",
   "|  _ \\| ____/ ___|\\ \\/ / ___|| |    / \\\\ \\ / / ____|  _ \\",
   "| |_) |  _|| |  _  \\  /\\___ \\| |   / _ \\\\ V /|  _| | |_) |",
   "|  _ <| |__| |_| | /  \\ ___) | |__/ ___ \\| | | |___|  _ <",
   "|_| \\_\\_____\\____|/_/\\_\\____/|____/_/   \\_\\_| |_____|_| \\_\\",
-  "",
-  "          .----.",
-  "      ___/ .  . \\___        [^filler]",
-  "     /   \\  --  /   \\       \\w+",
-  "     \\____\\____/____/       ^heart$",
-  "          /_||_\\",
-  "",
-  "                    precision is damage",
-  "",
 ];
 
-const LANDING_WIDTH = Math.max(...LANDING_ART.map((row) => row.length));
+const MONSTER_ART = [
+  "          .----.",
+  "      ___/ .  . \\___",
+  "     /   \\  --  /   \\",
+  "     \\____\\____/____/",
+  "          /_||_\\",
+];
+
+const TAGLINE = "precision is damage";
+
+const TITLE_WIDTH    = Math.max(...TITLE_ART.map((row) => row.length));
+const MONSTER_WIDTH  = Math.max(...MONSTER_ART.map((row) => row.length));
+const BAND_GAP       = "    "; // 4 spaces between monster art and chapter box
 
 function padRows(rows: string[], width: number): string[] {
   return rows.map((row) => row.padEnd(width, " "));
@@ -88,10 +91,22 @@ export function buildMenuRows(items: MenuItem[], selectedIdx: number): string[] 
   return padRows(rows, width);
 }
 
-export function buildLandingRows(items: MenuItem[], selectedIdx: number): string[] {
+export function buildLandingRows(save: SaveFile, items: MenuItem[], selectedIdx: number): string[] {
+  const titleRows   = padRows(TITLE_ART, TITLE_WIDTH);
+  const chapterRows = buildChapterRows(save);
+  const monsterRows = padRows(MONSTER_ART, MONSTER_WIDTH);
+  const bandRows = monsterRows.map((row, i) => row + BAND_GAP + (chapterRows[i] ?? ""));
+  const menuRows = buildMenuRows(items, selectedIdx);
   return [
-    ...padRows(LANDING_ART, LANDING_WIDTH),
-    ...buildMenuRows(items, selectedIdx),
+    ...titleRows,
+    "",
+    ...bandRows,
+    "",
+    TAGLINE,
+    "",
+    ...menuRows,
+    "",
+    buildBottomLine(save),
   ];
 }
 
@@ -103,9 +118,8 @@ export type MenuScreenProps = {
 export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElement {
   const items = buildMenuItems(save);
   const [idx, setIdx] = useState(0);
-  const artRows = padRows(LANDING_ART, LANDING_WIDTH);
-  const menuRows = buildMenuRows(items, idx);
-  const menuWidth = Math.max(...menuRows.map((row) => row.length), 0);
+  const rows = buildLandingRows(save, items, idx);
+  const width = Math.max(...rows.map((row) => row.length), 0);
 
   useKeyboard((e: KeyEvent) => {
     if (e.name === "up") setIdx((i) => navigateMenu(items.length, i, "up"));
@@ -118,14 +132,9 @@ export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElem
 
   return (
     <box flexDirection="column" flexGrow={1} padding={2} alignItems="center" justifyContent="center">
-      <box flexDirection="column" width={LANDING_WIDTH}>
-        {artRows.map((row, i) => (
-          <text key={`art:${i}:${row}`}>{row}</text>
-        ))}
-      </box>
-      <box flexDirection="column" width={menuWidth}>
-        {menuRows.map((row, i) => (
-          <text key={`menu:${i}:${row}`}>{row}</text>
+      <box flexDirection="column" width={width}>
+        {rows.map((row, i) => (
+          <text key={`row:${i}:${row}`}>{row}</text>
         ))}
       </box>
     </box>
