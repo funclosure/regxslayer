@@ -50,3 +50,10 @@ forward automatically. Slay one monster in a chapter to unlock the next chapter.
 ## No telemetry
 
 regxslayer is fully offline. It opens no network sockets.
+
+## Built with
+
+regxslayer's TUI is built on **gridland** — a React renderer for terminal
+grids. The `@gridland/bun` runtime (`npm i @gridland/bun`) drives the render
+loop and `@gridland/utils` provides the keyboard hook, terminal dimensions,
+and the `<scrollbox>` primitive used across every screen.
