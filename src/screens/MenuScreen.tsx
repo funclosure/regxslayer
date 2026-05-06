@@ -12,9 +12,15 @@ export const CHAPTERS: ReadonlyArray<{ id: string; short: string; total: number 
   { id: "quantifiers",      short: "Quants",   total: 4 },
 ];
 
+export function buildContinueLabel(lastMode: SaveFile["lastMode"]): string | null {
+  if (lastMode === null) return null;
+  return `Continue   (last: ${lastMode})`;
+}
+
 export function buildMenuItems(save: SaveFile): MenuItem[] {
   const items: MenuItem[] = [];
-  if (save.lastMode !== null) items.push({ key: "continue", label: "Continue" });
+  const continueLabel = buildContinueLabel(save.lastMode);
+  if (continueLabel !== null) items.push({ key: "continue", label: continueLabel });
   items.push({ key: "story", label: "Story" });
   items.push({ key: "encounter", label: "Encounter" });
   items.push({ key: "tutorial", label: "Tutorial" });

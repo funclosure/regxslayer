@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS } from "@/screens/MenuScreen";
+import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -41,7 +41,7 @@ describe("buildLandingRows", () => {
     expect(rows.some((row) => row.includes("[^filler]"))).toBe(true);
     expect(rows.some((row) => row.includes("^heart$"))).toBe(true);
     expect(rows.map((row) => row.trim())).toContain("precision is damage");
-    expect(rows.map((row) => row.trimEnd())).toContain("▶ Continue");
+    expect(rows.map((row) => row.trimEnd())).toContain("▶ Continue   (last: story)");
     expect(rows.map((row) => row.trimEnd())).toContain("  Story");
   });
 
@@ -55,6 +55,25 @@ describe("buildLandingRows", () => {
     expect(new Set(rows.map((row) => row.length)).size).toBe(1);
     expect(rows[0]!.startsWith("▶ Continue")).toBe(true);
     expect(rows[1]!.startsWith("  Story")).toBe(true);
+  });
+});
+
+describe("buildContinueLabel", () => {
+  test("returns null when lastMode is null", () => {
+    expect(buildContinueLabel(null)).toBe(null);
+  });
+
+  test("formats label with mode suffix for each save mode", () => {
+    expect(buildContinueLabel("story")).toBe("Continue   (last: story)");
+    expect(buildContinueLabel("encounter")).toBe("Continue   (last: encounter)");
+    expect(buildContinueLabel("tutorial")).toBe("Continue   (last: tutorial)");
+  });
+});
+
+describe("buildMenuItems with lastMode", () => {
+  test("Continue item label includes the (last: …) suffix", () => {
+    const items = buildMenuItems({ ...empty, lastMode: "encounter" });
+    expect(items[0]).toEqual({ key: "continue", label: "Continue   (last: encounter)" });
   });
 });
 
