@@ -55,6 +55,9 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
   const engine = useCombatEngine({ monster, onTraitEvent });
   const [hintOpen, setHintOpen] = useState(false);
 
+  // Hold the kill scene for one banner-duration before transitioning to victory.
+  // The same constant powers the strip-phase timer in useCombatEngine, so the
+  // STRIPPED and SLAIN banners pace identically.
   useEffect(() => {
     if (engine.state.phase.kind !== "kill") return;
     const timer = setTimeout(() => onKill(engine.state.bestRegexes), BANNER_DURATION_MS);
@@ -165,7 +168,7 @@ export function CombatScreen(props: CombatScreenProps): React.ReactElement {
       <Cheatsheet
         chapterTitle={chapter.title}
         lines={chapter.cheatsheet}
-        hints="[tab] back to combat"
+        hints="[tab] back · [esc] close"
       />
     );
   } else {

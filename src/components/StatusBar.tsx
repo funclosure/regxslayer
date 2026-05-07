@@ -15,12 +15,6 @@ function tryInfoRow(parts: readonly string[], width: number): string | null {
   return left + "─".repeat(width - left.length);
 }
 
-/**
- * Pure builder for the status info row. Drops segments right-to-left
- * (sessions → slain → screen) when the terminal can't fit the full row.
- * Brand stays visible at any width; below brand-only the brand is
- * truncated rather than disappearing.
- */
 export function formatStatusInfoRow(
   brand: string,
   screen: string,
@@ -44,32 +38,14 @@ export function formatStatusInfoRow(
   return brand.slice(0, width);
 }
 
-/**
- * Pure builder for the status hint row. Always returns exactly `width`
- * characters so the status block height is constant (preserves vertical
- * rhythm).
- */
-export function formatStatusHintRow(hints: string, width: number): string {
-  if (hints === "") return " ".repeat(width);
-  const padded = ` ${hints}`;
-  if (padded.length >= width) return padded.slice(0, width);
-  return padded + " ".repeat(width - padded.length);
-}
-
 export type StatusBarProps = {
-  /** Short screen identifier shown after the brand, e.g. "stats". */
   screen: string;
-  /** Hints line, e.g. "[r] reset · [esc] back". */
-  hints: string;
 };
 
-export function StatusBar({ screen, hints }: StatusBarProps): React.ReactElement {
+/** Single-row status: brand · screen · slain · sessions, dashes filling the rest.
+ *  No hint row — hints live in the input panel footer. */
+export function StatusBar({ screen }: StatusBarProps): React.ReactElement {
   const { width } = useTerminalDimensions();
   const { slain, sessions } = useSaveLifetime();
-  return (
-    <box flexDirection="column" width="100%" flexShrink={0}>
-      <text>{formatStatusInfoRow(BRAND, screen, slain, sessions, width)}</text>
-      <text>{formatStatusHintRow(hints, width)}</text>
-    </box>
-  );
+  return <text>{formatStatusInfoRow(BRAND, screen, slain, sessions, width)}</text>;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { formatStatusInfoRow, formatStatusHintRow, BRAND } from "@/components/StatusBar";
+import { formatStatusInfoRow, BRAND } from "@/components/StatusBar";
 
 describe("BRAND", () => {
   test("is regxslayer", () => {
@@ -64,21 +64,3 @@ describe("formatStatusInfoRow", () => {
   });
 });
 
-describe("formatStatusHintRow", () => {
-  test("non-empty hints are left-padded by 1 space and right-filled to width", () => {
-    const row = formatStatusHintRow("[r] reset · [esc] back", 40);
-    expect([...row].length).toBe(40);
-    expect(row.startsWith(" [r] reset · [esc] back")).toBe(true);
-    expect(row.slice(" [r] reset · [esc] back".length)).toBe(" ".repeat(40 - " [r] reset · [esc] back".length));
-  });
-
-  test("empty hints renders a row of width spaces", () => {
-    const row = formatStatusHintRow("", 30);
-    expect(row).toBe(" ".repeat(30));
-  });
-
-  test("hints longer than width are clipped to width", () => {
-    const row = formatStatusHintRow("very long hint that does not fit", 10);
-    expect([...row].length).toBe(10);
-  });
-});
