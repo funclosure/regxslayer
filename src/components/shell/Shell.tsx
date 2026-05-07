@@ -25,7 +25,7 @@ export type ShellProps = {
 
 export function Shell(props: ShellProps): React.ReactElement {
   const { scene, panel, screen, capWidth = true } = props;
-  const { width } = useTerminalDimensions();
+  const { width, height } = useTerminalDimensions();
   const shellWidth = computeShellWidth(width, capWidth);
 
   // Status row is rendered inline here (not via <StatusBar>) so the new shell stays
@@ -39,9 +39,12 @@ export function Shell(props: ShellProps): React.ReactElement {
   // props the caller already set (items, hint text, etc.) are preserved.
   const sizedPanel = React.cloneElement(panel, { capWidth });
 
+  // Bound the column to the terminal height so the panel never renders past the
+  // visible area. The scene gets explicit flexShrink={1} so it (not the panel) is
+  // the region that clips when total intrinsic height exceeds terminal height.
   const inner = (
-    <box flexDirection="column" flexGrow={1} width={shellWidth}>
-      <box flexDirection="column" flexGrow={1}>{scene}</box>
+    <box flexDirection="column" width={shellWidth} height={height}>
+      <box flexDirection="column" flexGrow={1} flexShrink={1}>{scene}</box>
       <text>{status}</text>
       {sizedPanel}
     </box>
@@ -50,7 +53,7 @@ export function Shell(props: ShellProps): React.ReactElement {
   // Wide-terminal cap: when capping is active, center the inner column.
   if (shellWidth < width) {
     return (
-      <box flexDirection="column" flexGrow={1} alignItems="center" width="100%">
+      <box flexDirection="column" alignItems="center" width="100%" height={height}>
         {inner}
       </box>
     );
