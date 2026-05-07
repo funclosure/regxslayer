@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import { Screen } from "@/components/Screen";
+import { Shell } from "@/components/shell/Shell";
+import { SceneFrame } from "@/components/shell/SceneFrame";
+import { Prompt } from "@/components/shell/panel/Prompt";
+import { ChoiceList, navigateChoiceList, type ChoiceItem } from "@/components/shell/panel/ChoiceList";
 import { TRAITS } from "@/game/traits";
 import { classify, sortTraits } from "@/game/stats";
 import type { SaveFile, TraitStat } from "@/game/types";
@@ -8,13 +11,12 @@ import type { Trait } from "@/game/traits";
 
 export type StatsScreenProps = {
   save: SaveFile;
-  onReset: () => void;       // caller wires resetStats + setSave
+  onReset: () => void;
   onBack: () => void;
 };
 
 const TRAIT_COL = 18;
 
-/** Pure renderer for one row — exported for testing. */
 export function renderStatsRowText(trait: Trait, stat: TraitStat): string {
   const c = classify(stat);
   const total = stat.perfectStrips + stat.nonPerfectTries;
@@ -23,15 +25,24 @@ export function renderStatsRowText(trait: Trait, stat: TraitStat): string {
   return `${c.flag} ${trait.padEnd(TRAIT_COL)} ${counts.padEnd(8)} ${pct}   ${c.label}`;
 }
 
+const CONFIRM_ITEMS: ChoiceItem[] = [
+  { kind: "choice", key: "no", label: "No, keep them" },
+  { kind: "choice", key: "yes", label: "Yes, reset" },
+];
+
 export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.ReactElement {
   const [confirming, setConfirming] = useState(false);
+  const [confirmIdx, setConfirmIdx] = useState(0); // default to "No"
 
   useKeyboard((e: KeyEvent) => {
     if (confirming) {
-      if (e.name === "y") {
+      if (e.name === "up" || e.name === "down") {
+        setConfirmIdx((i) => navigateChoiceList(CONFIRM_ITEMS, i, e.name as "up" | "down"));
+      } else if (e.name === "return") {
+        const item = CONFIRM_ITEMS[confirmIdx];
         setConfirming(false);
-        onReset();
-      } else {
+        if (item?.kind === "choice" && item.key === "yes") onReset();
+      } else if (e.name === "escape") {
         setConfirming(false);
       }
       return;
@@ -43,16 +54,8 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
   const rows = sortTraits(save.traitStats, TRAITS);
   const total = save.storyKills + save.encounterKills;
 
-  return (
-    <Screen
-      screen="stats"
-      hints="[r] reset · [esc] back"
-      footer={
-        confirming
-          ? <text>Reset all trait stats? This cannot be undone. [y]es / [n]o (default)</text>
-          : null
-      }
-    >
+  const scene = (
+    <SceneFrame>
       <box flexDirection="column" gap={0}>
         <text>STATS</text>
         <text>─────</text>
@@ -67,6 +70,19 @@ export function StatsScreen({ save, onReset, onBack }: StatsScreenProps): React.
           <text key={r.trait}>{renderStatsRowText(r.trait, r.stat)}</text>
         ))}
       </box>
-    </Screen>
+    </SceneFrame>
   );
+
+  const panel = confirming ? (
+    <ChoiceList
+      items={CONFIRM_ITEMS}
+      focusedIdx={confirmIdx}
+      header="Reset all trait stats? This cannot be undone."
+      hints="[↑↓] move · [⏎] confirm · [esc] cancel"
+    />
+  ) : (
+    <Prompt hint="[r] reset · [esc] back" />
+  );
+
+  return <Shell screen="stats" scene={scene} panel={panel} />;
 }
