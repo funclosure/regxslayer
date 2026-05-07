@@ -27,22 +27,24 @@ export function TextInput(props: TextInputProps): React.ReactElement {
   const { width: termWidth } = useTerminalDimensions();
   const width = computeShellWidth(termWidth, props.capWidth ?? false);
 
-  // Input row: literal "› " followed by the gridland <input> stretched to fill.
+  // Input row: render side borders inline so the gridland <input> sits directly
+  // inside a single flex row with `flexGrow={1}`. Wrapping it in a nested
+  // <PanelRow> + inner flex row caused the input to collapse and become
+  // visually empty (the value was captured but nothing rendered).
   const inputRow = (
-    <PanelRow width={width}>
-      <box flexDirection="row" gap={1} width="100%">
-        <text>›</text>
-        <box flexGrow={1}>
-          {React.createElement("input", {
-            value: props.pattern,
-            focused: true,
-            onInput: props.onPatternChange,
-            maxLength: 256,
-            width: "100%",
-          })}
-        </box>
+    <box flexDirection="row" width={width}>
+      <text>│ › </text>
+      <box flexGrow={1}>
+        {React.createElement("input", {
+          value: props.pattern,
+          focused: true,
+          onInput: props.onPatternChange,
+          maxLength: 256,
+          width: "100%",
+        })}
       </box>
-    </PanelRow>
+      <text> │</text>
+    </box>
   );
 
   return (
