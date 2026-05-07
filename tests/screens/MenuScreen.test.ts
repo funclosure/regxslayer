@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildLandingRows, buildMenuItems, buildMenuRows, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, buildBottomLine, MONSTER_ART } from "@/screens/MenuScreen";
+import { buildSplashRows, buildMenuItems, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, MONSTER_ART } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -34,28 +34,17 @@ describe("navigateMenu", () => {
   });
 });
 
-describe("buildLandingRows", () => {
-  test("renders title, monster, tagline, chapter box, menu, and bottom line", () => {
-    const save: SaveFile = { ...empty, lastMode: "story", storyKills: 5 };
-    const rows = buildLandingRows(save, buildMenuItems(save), 0);
+describe("buildSplashRows", () => {
+  test("renders title art, monster band, chapter box, and tagline", () => {
+    const rows = buildSplashRows(empty);
     expect(rows.some((row) => row.includes("____  _____"))).toBe(true);
     expect(rows.some((row) => row.includes(".----."))).toBe(true);
     expect(rows.some((row) => row.includes("┌─ chapters"))).toBe(true);
     expect(rows.map((row) => row.trim())).toContain("precision is damage");
-    expect(rows.map((row) => row.trim())).toContain("▶ Continue   (last: story)");
-    expect(rows.map((row) => row.trim())).toContain("Story");
-    expect(rows.some((row) => row.includes("5 slain · 0 sessions"))).toBe(true);
-  });
-
-  test("hides Continue and shows welcome bottom line on a fresh save", () => {
-    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
-    expect(rows.some((row) => row.includes("Continue"))).toBe(false);
-    expect(rows.some((row) => row.includes("[↑↓] move · [enter] choose · [q] quit"))).toBe(true);
-    expect(rows.some((row) => row.includes("░░░░ 0/4"))).toBe(true);
   });
 
   test("monster band joins monster art with chapter box row-for-row", () => {
-    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
+    const rows = buildSplashRows(empty);
     const bandRow = rows.find((row) => row.includes(".----.") && row.includes("┌─ chapters"));
     expect(bandRow).toBeDefined();
   });
@@ -64,24 +53,18 @@ describe("buildLandingRows", () => {
     expect(MONSTER_ART.length).toBe(buildChapterRows(empty).length);
   });
 
-  test("removes the legacy [^filler] / \\w+ / ^heart$ regex annotations", () => {
-    const rows = buildLandingRows(empty, buildMenuItems(empty), 0);
-    expect(rows.some((row) => row.includes("[^filler]"))).toBe(false);
-    expect(rows.some((row) => row.includes("^heart$"))).toBe(false);
+  test("excludes the menu list and lifetime stats (now in panel + StatusBar)", () => {
+    const save: SaveFile = { ...empty, lastMode: "story", storyKills: 5 };
+    const rows = buildSplashRows(save);
+    expect(rows.some((row) => row.includes("Continue"))).toBe(false);
+    expect(rows.some((row) => row.includes("▶ Story"))).toBe(false);
+    expect(rows.some((row) => row.includes("5 slain"))).toBe(false);
+    expect(rows.some((row) => row.includes("[↑↓] move"))).toBe(false);
   });
 
-  test("keeps every landing row within the minimum terminal width", () => {
-    const rows = buildLandingRows({ ...empty, lastMode: "story" }, buildMenuItems({ ...empty, lastMode: "story" }), 0);
+  test("keeps every splash row within the minimum terminal width", () => {
+    const rows = buildSplashRows({ ...empty, lastMode: "story" });
     expect(Math.max(...rows.map((row) => row.length))).toBeLessThanOrEqual(76);
-  });
-});
-
-describe("buildMenuRows", () => {
-  test("left-aligns options inside the centered menu block", () => {
-    const rows = buildMenuRows(buildMenuItems({ ...empty, lastMode: "story" }), 0);
-    expect(new Set(rows.map((row) => row.length)).size).toBe(1);
-    expect(rows[0]!.startsWith("▶ Continue")).toBe(true);
-    expect(rows[1]!.startsWith("  Story")).toBe(true);
   });
 });
 
@@ -168,23 +151,3 @@ describe("buildChapterRows", () => {
   });
 });
 
-describe("buildBottomLine", () => {
-  test("welcomes a fresh player when no kills and no sessions", () => {
-    expect(buildBottomLine(empty)).toBe("[↑↓] move · [enter] choose · [q] quit");
-  });
-
-  test("shows kill stats when player has progress", () => {
-    const save: SaveFile = { ...empty, storyKills: 30, encounterKills: 7, encounterSessions: 4 };
-    expect(buildBottomLine(save)).toBe("37 slain · 4 sessions · [↑↓] [enter]");
-  });
-
-  test("shows stats variant when only sessions are nonzero", () => {
-    const save: SaveFile = { ...empty, encounterSessions: 1 };
-    expect(buildBottomLine(save)).toBe("0 slain · 1 sessions · [↑↓] [enter]");
-  });
-
-  test("shows stats variant when only kills are nonzero", () => {
-    const save: SaveFile = { ...empty, storyKills: 1 };
-    expect(buildBottomLine(save)).toBe("1 slain · 0 sessions · [↑↓] [enter]");
-  });
-});

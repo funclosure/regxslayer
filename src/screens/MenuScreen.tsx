@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
+import { Shell } from "@/components/shell/Shell";
+import { ChoiceList, navigateChoiceList, type ChoiceItem } from "@/components/shell/panel/ChoiceList";
 import type { SaveFile } from "@/game/types";
 
 export type MenuChoice = "continue" | "story" | "encounter" | "tutorial" | "stats" | "quit";
@@ -43,22 +45,6 @@ export function buildChapterRows(save: SaveFile): string[] {
   return [CHAPTER_BOX_TOP, ...body, CHAPTER_BOX_BOTTOM];
 }
 
-export function buildBottomLine(save: SaveFile): string {
-  const slain = save.storyKills + save.encounterKills;
-  const sessions = save.encounterSessions;
-  if (slain === 0 && sessions === 0) {
-    return "[↑↓] move · [enter] choose · [q] quit";
-  }
-  return `${slain} slain · ${sessions} sessions · [↑↓] [enter]`;
-}
-
-export function navigateMenu(itemCount: number, currentIdx: number, direction: "up" | "down"): number {
-  if (itemCount <= 0) return 0;
-  return direction === "down"
-    ? (currentIdx + 1) % itemCount
-    : (currentIdx + itemCount - 1) % itemCount;
-}
-
 const TITLE_ART = [
   " ____  _____ ____ __  __ ____  _      _ __   _______ ____",
   "|  _ \\| ____/ ___|\\ \\/ / ___|| |    / \\\\ \\ / / ____|  _ \\",
@@ -76,46 +62,42 @@ export const MONSTER_ART = [
 ];
 
 const TAGLINE = "precision is damage";
-
 const TITLE_WIDTH    = Math.max(...TITLE_ART.map((row) => row.length));
 const MONSTER_WIDTH  = Math.max(...MONSTER_ART.map((row) => row.length));
-const BAND_GAP       = "    "; // 4 spaces between monster art and chapter box
+const BAND_GAP       = "    ";
 
 function padRows(rows: string[], width: number): string[] {
   return rows.map((row) => row.padEnd(width, " "));
 }
 
-function centerPad(row: string, width: number): string {
-  const slack = Math.max(0, width - row.length);
-  const left = Math.floor(slack / 2);
-  return " ".repeat(left) + row;
-}
-
-export function buildMenuRows(items: MenuItem[], selectedIdx: number): string[] {
-  const rows = items.map((it, i) => `${i === selectedIdx ? "▶" : " "} ${it.label}`);
-  const width = Math.max(...rows.map((row) => row.length), 0);
-  return padRows(rows, width);
-}
-
-export function buildLandingRows(save: SaveFile, items: MenuItem[], selectedIdx: number): string[] {
+export function buildSplashRows(save: SaveFile): string[] {
   const titleRows   = padRows(TITLE_ART, TITLE_WIDTH);
   const chapterRows = buildChapterRows(save);
   const monsterRows = padRows(MONSTER_ART, MONSTER_WIDTH);
   const bandRows    = monsterRows.map((row, i) => row + BAND_GAP + (chapterRows[i] ?? ""));
-  const bandWidth   = MONSTER_WIDTH + BAND_GAP.length + (chapterRows[0]?.length ?? 0);
-  const screenWidth = Math.max(TITLE_WIDTH, bandWidth);
+  return [...titleRows, ...bandRows, TAGLINE];
+}
 
-  const center = (row: string) => centerPad(row, screenWidth);
-  const centeredBand = bandRows.map((row) => centerPad(row, screenWidth));
-  const centeredMenu = buildMenuRows(items, selectedIdx).map(center);
+/** Backwards-compatible nav helper kept so existing consumers/tests don't break. */
+export function navigateMenu(itemCount: number, currentIdx: number, direction: "up" | "down"): number {
+  if (itemCount <= 0) return 0;
+  return direction === "down"
+    ? (currentIdx + 1) % itemCount
+    : (currentIdx + itemCount - 1) % itemCount;
+}
 
-  return [
-    ...titleRows.map(center),
-    ...centeredBand,
-    center(TAGLINE),
-    ...centeredMenu,
-    center(buildBottomLine(save)),
-  ];
+function MenuSplash({ save }: { save: SaveFile }): React.ReactElement {
+  const rows = buildSplashRows(save);
+  const width = Math.max(...rows.map((row) => row.length), 0);
+  return (
+    <box flexDirection="column" flexGrow={1} alignItems="center">
+      <box flexDirection="column" width={width}>
+        {rows.map((row, i) => (
+          <text key={`row:${i}`}>{row}</text>
+        ))}
+      </box>
+    </box>
+  );
 }
 
 export type MenuScreenProps = {
@@ -125,26 +107,31 @@ export type MenuScreenProps = {
 
 export function MenuScreen({ save, onSelect }: MenuScreenProps): React.ReactElement {
   const items = buildMenuItems(save);
+  const choiceItems: ChoiceItem[] = items.map((it) => ({ kind: "choice", key: it.key, label: it.label }));
   const [idx, setIdx] = useState(0);
-  const rows = buildLandingRows(save, items, idx);
-  const width = Math.max(...rows.map((row) => row.length), 0);
 
   useKeyboard((e: KeyEvent) => {
-    if (e.name === "up") setIdx((i) => navigateMenu(items.length, i, "up"));
-    else if (e.name === "down") setIdx((i) => navigateMenu(items.length, i, "down"));
-    else if (e.name === "return") {
+    if (e.name === "up" || e.name === "down") {
+      setIdx((i) => navigateChoiceList(choiceItems, i, e.name as "up" | "down"));
+    } else if (e.name === "return") {
       const item = items[idx];
       if (item) onSelect(item.key);
+    } else if (e.name === "q") {
+      onSelect("quit");
     }
   }, { global: true });
 
   return (
-    <box flexDirection="column" flexGrow={1} alignItems="center">
-      <box flexDirection="column" width={width}>
-        {rows.map((row, i) => (
-          <text key={`row:${i}:${row}`}>{row}</text>
-        ))}
-      </box>
-    </box>
+    <Shell
+      screen="menu"
+      scene={<MenuSplash save={save} />}
+      panel={
+        <ChoiceList
+          items={choiceItems}
+          focusedIdx={idx}
+          hints="[↑↓] move · [⏎] choose · [q] quit"
+        />
+      }
+    />
   );
 }
