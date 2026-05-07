@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import { Screen } from "@/components/Screen";
+import { Shell } from "@/components/shell/Shell";
+import { SceneFrame } from "@/components/shell/SceneFrame";
+import { Prompt } from "@/components/shell/panel/Prompt";
 
 export type EncounterVictoryProps = {
   monsterName: string;
-  sessionNumber: number;       // save.encounterSessions
-  killNumberInSession: number; // 1-based count of kills since the player entered this session
+  sessionNumber: number;
+  killNumberInSession: number;
   onAdvance: () => void;
   onBack: () => void;
   /** Auto-advance after this many ms unless the user presses a key. Tests pass 1. */
@@ -25,8 +27,8 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
     return () => clearTimeout(handle);
   }, [autoAdvanceMs, onAdvance]);
 
-  return (
-    <Screen screen="victory" hints="any key advances · [esc] menu">
+  const scene = (
+    <SceneFrame>
       <box flexDirection="column" gap={0}>
         <text>SLAIN</text>
         <text>─────</text>
@@ -34,6 +36,14 @@ export function EncounterVictoryScreen(props: EncounterVictoryProps): React.Reac
       <text> </text>
       <text>{monsterName}</text>
       <text>Encounter #{sessionNumber} · kill {killNumberInSession} of this session</text>
-    </Screen>
+    </SceneFrame>
+  );
+
+  return (
+    <Shell
+      screen="victory"
+      scene={scene}
+      panel={<Prompt hint="any key advances · [esc] menu" />}
+    />
   );
 }
