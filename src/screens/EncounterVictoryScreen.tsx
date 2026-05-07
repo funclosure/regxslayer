@@ -6,7 +6,9 @@ import { Prompt } from "@/components/shell/panel/Prompt";
 
 export type EncounterVictoryProps = {
   monsterName: string;
+  /** Mirrors `save.encounterSessions`. */
   sessionNumber: number;
+  /** 1-based count of kills since the player entered this session. */
   killNumberInSession: number;
   onAdvance: () => void;
   onBack: () => void;
