@@ -34,6 +34,22 @@ describe("formatPanelTopBorder", () => {
     expect(row.startsWith("╭")).toBe(true);
     expect(row.endsWith("╮")).toBe(true);
   });
+
+  test("emoji header preserves exact codepoint width and never splits surrogates", () => {
+    // 🔥 is an astral codepoint (UTF-16 surrogate pair). The output should
+    // be exactly width codepoints long with no lone surrogates.
+    const row = formatPanelTopBorder(20, "🔥");
+    expect([...row].length).toBe(20);
+    expect(row.startsWith("╭─ 🔥 ")).toBe(true);
+    expect(row.endsWith("╮")).toBe(true);
+    // Truncation case: 4 fire emojis (8 code units) should not split a surrogate.
+    const tight = formatPanelTopBorder(6, "🔥🔥🔥🔥");
+    expect([...tight].length).toBe(6);
+    // No lone surrogates — every codepoint should be a complete character
+    for (const ch of tight) {
+      expect(ch.length === 1 || (ch.length === 2 && ch.charCodeAt(0) >= 0xd800)).toBe(true);
+    }
+  });
 });
 
 describe("formatPanelBottomBorder", () => {

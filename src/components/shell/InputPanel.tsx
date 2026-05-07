@@ -6,11 +6,12 @@ import React from "react";
 function buildLabeledRule(innerWidth: number, prefix?: string): string {
   if (innerWidth <= 0) return "";
   if (!prefix) return "─".repeat(innerWidth);
-  if (prefix.length >= innerWidth) {
+  const codepoints = [...prefix];
+  if (codepoints.length >= innerWidth) {
     // Prefix doesn't fit cleanly; truncate so output is exactly innerWidth.
-    return prefix.slice(0, innerWidth);
+    return codepoints.slice(0, innerWidth).join("");
   }
-  return prefix + "─".repeat(innerWidth - prefix.length);
+  return prefix + "─".repeat(innerWidth - codepoints.length);
 }
 
 /** Top border with rounded corners. Optional header label appears as "╭─ <label> ─…─╮". */
