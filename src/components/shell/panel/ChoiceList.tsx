@@ -1,4 +1,8 @@
 import React from "react";
+import { useTerminalDimensions } from "@gridland/utils";
+import { ATTR_DIM } from "@/components/style";
+import { InputPanel, panelTextRow } from "@/components/shell/InputPanel";
+import { computeShellWidth } from "@/components/shell/Shell";
 
 export type ChoiceItem =
   | { kind: "section"; label: string }
@@ -51,4 +55,69 @@ export function computeScrollWindow(
     moreAbove: startIdx > 0,
     moreBelow: endIdx < items.length,
   };
+}
+
+/** Maximum rows the choice list takes inside the panel body — half the terminal height. */
+function maxBodyRows(termHeight: number): number {
+  return Math.max(3, Math.floor(termHeight / 2) - 3); // 3 chrome rows: top + footer + bottom
+}
+
+export type ChoiceListProps = {
+  items: ReadonlyArray<ChoiceItem>;
+  focusedIdx: number;
+  /** Optional panel header label. */
+  header?: string;
+  /** Footer hints, e.g. "[↑↓] move · [⏎] choose". */
+  hints: string;
+  capWidth?: boolean;
+};
+
+/** `choice` panel mode. Renders the items vertically inside the bordered panel,
+ *  with the focused row marked by `▶`. Sections render as non-cursor headings.
+ *  Long lists scroll inside the panel; ▲/▼ indicators appear at boundaries. */
+export function ChoiceList(props: ChoiceListProps): React.ReactElement {
+  const { items, focusedIdx, header, hints, capWidth = true } = props;
+  const { width: termWidth, height: termHeight } = useTerminalDimensions();
+  const width = computeShellWidth(termWidth, capWidth);
+  const maxRows = maxBodyRows(termHeight);
+  const win = computeScrollWindow(items, focusedIdx, maxRows);
+
+  // Build rows for the visible slice. Boundary indicators replace the first/last row when active.
+  const rows: string[] = [];
+  for (let i = win.startIdx; i < win.endIdx; i++) {
+    const item = items[i]!;
+    if (i === win.startIdx && win.moreAbove) {
+      rows.push(panelTextRow(width, "  ▲ more above"));
+      continue;
+    }
+    if (i === win.endIdx - 1 && win.moreBelow) {
+      rows.push(panelTextRow(width, "  ▼ more below"));
+      continue;
+    }
+    if (item.kind === "section") {
+      rows.push(panelTextRow(width, "  " + item.label));
+      continue;
+    }
+    const cursor = i === focusedIdx ? "▶ " : "  ";
+    rows.push(panelTextRow(width, cursor + item.label));
+  }
+
+  return (
+    <InputPanel width={width} header={header} hints={hints}>
+      {rows.map((r, i) => {
+        // Section rows render dim; choice + cursor rows render at default weight.
+        const visibleIdx = win.startIdx + i;
+        const item = items[visibleIdx];
+        const isSection = item?.kind === "section";
+        const isBoundary =
+          (i === 0 && win.moreAbove) || (i === rows.length - 1 && win.moreBelow);
+        if (isSection || isBoundary) {
+          return React.createElement("text", { key: `r:${i}` },
+            React.createElement("span", { style: { attributes: ATTR_DIM } }, r),
+          );
+        }
+        return <text key={`r:${i}`}>{r}</text>;
+      })}
+    </InputPanel>
+  );
 }
