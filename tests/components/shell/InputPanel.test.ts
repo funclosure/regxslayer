@@ -3,6 +3,7 @@ import {
   formatPanelTopBorder,
   formatPanelBottomBorder,
   formatPanelFooterRule,
+  panelTextRow,
 } from "@/components/shell/InputPanel";
 
 describe("formatPanelTopBorder", () => {
@@ -82,5 +83,47 @@ describe("formatPanelFooterRule", () => {
     expect([...row].length).toBe(12);
     expect(row.startsWith("│")).toBe(true);
     expect(row.endsWith("│")).toBe(true);
+  });
+});
+
+describe("panelTextRow", () => {
+  test("content shorter than width is padded to exact width", () => {
+    const row = panelTextRow(20, "hi");
+    expect([...row].length).toBe(20);
+    expect(row).toBe("│ hi               │");
+  });
+
+  test("content equal to inner width fits exactly with no padding", () => {
+    const row = panelTextRow(10, "abcdef"); // inner=6
+    expect([...row].length).toBe(10);
+    expect(row).toBe("│ abcdef │");
+  });
+
+  test("content longer than inner width is truncated", () => {
+    const row = panelTextRow(10, "abcdefghijklmnop");
+    expect([...row].length).toBe(10);
+    expect(row.startsWith("│ ")).toBe(true);
+    expect(row.endsWith(" │")).toBe(true);
+  });
+
+  test("emoji content preserves codepoint width without splitting surrogates", () => {
+    const row = panelTextRow(10, "🔥🔥🔥🔥🔥🔥"); // 6 codepoints, inner=6
+    expect([...row].length).toBe(10);
+    // No lone surrogates: every iterated character is a complete codepoint
+    for (const ch of row) {
+      expect(ch.length === 1 || (ch.length === 2 && ch.charCodeAt(0) >= 0xd800)).toBe(true);
+    }
+  });
+
+  test("empty content pads to full inner width", () => {
+    const row = panelTextRow(8, "");
+    expect([...row].length).toBe(8);
+    expect(row).toBe("│      │");
+  });
+
+  test("width less than 4 returns empty string (no room for borders + content)", () => {
+    expect(panelTextRow(3, "x")).toBe("");
+    expect(panelTextRow(0, "x")).toBe("");
+    expect(panelTextRow(-1, "x")).toBe("");
   });
 });
