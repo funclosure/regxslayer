@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hasAnySlain, isSlain, isChapterUnlocked } from "@/screens/StorySelectScreen";
+import { hasAnySlain, isSlain, isChapterUnlocked, buildStoryChoiceItems } from "@/screens/StorySelectScreen";
 import type { Chapter, SaveFile } from "@/game/types";
 
 const emptySave: SaveFile = {
@@ -39,5 +39,24 @@ describe("isChapterUnlocked", () => {
   });
   test("second chapter unlocked when first has any kill", () => {
     expect(isChapterUnlocked(partialSave, chapters, 1)).toBe(true);
+  });
+});
+
+describe("buildStoryChoiceItems", () => {
+  test("first chapter unlocked, locked chapters render as section-only rows with no monsters", () => {
+    const items = buildStoryChoiceItems(chapters, emptySave);
+    expect(items[0]).toEqual({ kind: "section", label: "C1 — 0/1 slain" });
+    expect(items[1]).toEqual({ kind: "choice", key: "ch1:a", label: "· A" });
+    expect(items[2]).toEqual({ kind: "section", label: "C2 (locked)" });
+    expect(items.length).toBe(3); // locked chapter contributes no choice rows
+  });
+
+  test("slain monsters render with ✓ mark; chapter count reflects slain total", () => {
+    const items = buildStoryChoiceItems(chapters, partialSave);
+    expect(items[0]).toEqual({ kind: "section", label: "C1 — 1/1 slain" });
+    expect(items[1]).toEqual({ kind: "choice", key: "ch1:a", label: "✓ A" });
+    // c2 unlocks once any m is slain in c1
+    expect(items[2]).toEqual({ kind: "section", label: "C2 — 0/1 slain" });
+    expect(items[3]).toEqual({ kind: "choice", key: "ch2:b", label: "· B" });
   });
 });

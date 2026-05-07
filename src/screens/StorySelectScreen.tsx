@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import { Screen } from "@/components/Screen";
+import { Shell } from "@/components/shell/Shell";
+import { SceneFrame } from "@/components/shell/SceneFrame";
+import { ChoiceList, navigateChoiceList, type ChoiceItem } from "@/components/shell/panel/ChoiceList";
 import type { Chapter, SaveFile } from "@/game/types";
 
 export type StorySelectProps = {
@@ -25,61 +27,64 @@ export function isChapterUnlocked(save: SaveFile, chapters: Chapter[], ci: numbe
   return prev ? hasAnySlain(save, prev.id) : false;
 }
 
-type Entry = { chapter: Chapter; monster: Chapter["monsters"][number]; unlocked: boolean };
-
-function flattenEntries(chapters: Chapter[], save: SaveFile): Entry[] {
-  return chapters.flatMap((c, ci) => {
+/** Pure builder for the choice items, exported for testing.
+ *  Composite key on choices is `${chapterId}:${monsterId}` so the action handler
+ *  can split it back into a chapter+monster pair. */
+export function buildStoryChoiceItems(chapters: Chapter[], save: SaveFile): ChoiceItem[] {
+  const items: ChoiceItem[] = [];
+  chapters.forEach((c, ci) => {
     const unlocked = isChapterUnlocked(save, chapters, ci);
-    return c.monsters.map((m) => ({ chapter: c, monster: m, unlocked }));
+    const total = c.monsters.length;
+    const slain = c.monsters.filter((m) => isSlain(save, c.id, m.id)).length;
+    const head = unlocked ? `${c.title} — ${slain}/${total} slain` : `${c.title} (locked)`;
+    items.push({ kind: "section", label: head });
+    if (unlocked) {
+      for (const m of c.monsters) {
+        const mark = isSlain(save, c.id, m.id) ? "✓" : "·";
+        items.push({ kind: "choice", key: `${c.id}:${m.id}`, label: `${mark} ${m.name}` });
+      }
+    }
   });
+  return items;
 }
 
 export function StorySelectScreen({ chapters, save, onPickMonster, onBack }: StorySelectProps): React.ReactElement {
-  const entries = flattenEntries(chapters, save);
-  const [idx, setIdx] = useState(0);
+  const items = buildStoryChoiceItems(chapters, save);
+  // Initial focus = first choice item (skip leading section).
+  const firstChoiceIdx = items.findIndex((it) => it.kind === "choice");
+  const [idx, setIdx] = useState(firstChoiceIdx === -1 ? 0 : firstChoiceIdx);
 
   useKeyboard((e: KeyEvent) => {
-    if (entries.length === 0) {
+    if (items.length === 0) {
       if (e.name === "escape") onBack();
       return;
     }
-    if (e.name === "up") setIdx((i) => (i + entries.length - 1) % entries.length);
-    else if (e.name === "down") setIdx((i) => (i + 1) % entries.length);
-    else if (e.name === "return") {
-      const e2 = entries[idx]!;
-      if (e2.unlocked) onPickMonster(e2.chapter.id, e2.monster.id);
+    if (e.name === "up" || e.name === "down") {
+      setIdx((i) => navigateChoiceList(items, i, e.name as "up" | "down"));
+    } else if (e.name === "return") {
+      const item = items[idx];
+      if (item?.kind === "choice") {
+        const [chapterId, monsterId] = item.key.split(":");
+        if (chapterId && monsterId) onPickMonster(chapterId, monsterId);
+      }
     } else if (e.name === "escape") onBack();
   }, { global: true });
 
+  // Scene is intentionally sparse for v1 — status row already carries lifetime stats.
+  const scene = <SceneFrame><text> </text></SceneFrame>;
+
   return (
-    <Screen screen="story" hints="[↑↓] move · [⏎] enter · [esc] back">
-      <box flexDirection="column" gap={0}>
-        <text>Choose your fight</text>
-        <text>─────────────────</text>
-      </box>
-      {chapters.map((c, ci) => {
-        const unlocked = isChapterUnlocked(save, chapters, ci);
-        const total = c.monsters.length;
-        const slain = c.monsters.filter((m) => isSlain(save, c.id, m.id)).length;
-        const head = unlocked
-          ? `${c.title} — ${slain}/${total} slain`
-          : `${c.title} (locked)`;
-        return (
-          <box flexDirection="column" key={c.id}>
-            <text>{head}</text>
-            {unlocked
-              ? c.monsters.map((m) => {
-                  const e = entries.findIndex((x) => x.chapter.id === c.id && x.monster.id === m.id);
-                  const cur = e === idx;
-                  const mark = isSlain(save, c.id, m.id) ? "✓" : "·";
-                  return (
-                    <text key={m.id}>{cur ? "▶ " : "  "}{mark} {m.name}</text>
-                  );
-                })
-              : null}
-          </box>
-        );
-      })}
-    </Screen>
+    <Shell
+      screen="story"
+      scene={scene}
+      panel={
+        <ChoiceList
+          items={items}
+          focusedIdx={idx}
+          header="Choose your fight"
+          hints="[↑↓] move · [⏎] enter · [esc] back"
+        />
+      }
+    />
   );
 }
