@@ -1,6 +1,8 @@
 import React from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import { Screen } from "@/components/Screen";
+import { Shell } from "@/components/shell/Shell";
+import { SceneFrame } from "@/components/shell/SceneFrame";
+import { Prompt } from "@/components/shell/panel/Prompt";
 
 export type VictoryScreenProps = {
   monsterName: string;
@@ -12,14 +14,22 @@ export function VictoryScreen({ monsterName, onContinue }: VictoryScreenProps): 
     if (e.name === "return") onContinue();
   }, { global: true });
 
-  return (
-    <Screen screen="victory" hints="[⏎] continue">
+  const scene = (
+    <SceneFrame>
       <box flexDirection="column" gap={0}>
         <text>VICTORY</text>
         <text>───────</text>
       </box>
       <text> </text>
       <text>{monsterName} has fallen.</text>
-    </Screen>
+    </SceneFrame>
+  );
+
+  return (
+    <Shell
+      screen="victory"
+      scene={scene}
+      panel={<Prompt hint="[⏎] continue" />}
+    />
   );
 }
