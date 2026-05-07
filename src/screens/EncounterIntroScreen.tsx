@@ -1,6 +1,8 @@
 import React from "react";
 import { useKeyboard, type KeyEvent } from "@gridland/utils";
-import { Screen } from "@/components/Screen";
+import { Shell } from "@/components/shell/Shell";
+import { SceneFrame } from "@/components/shell/SceneFrame";
+import { Prompt } from "@/components/shell/panel/Prompt";
 
 export type EncounterIntroProps = {
   onBegin: () => void;
@@ -13,8 +15,8 @@ export function EncounterIntroScreen({ onBegin, onBack }: EncounterIntroProps): 
     else if (e.name === "escape") onBack();
   }, { global: true });
 
-  return (
-    <Screen screen="encounter" hints="[⏎] begin · [esc] back">
+  const scene = (
+    <SceneFrame>
       <box flexDirection="column" gap={0}>
         <text>WILD ENCOUNTER MODE</text>
         <text>───────────────────</text>
@@ -23,6 +25,14 @@ export function EncounterIntroScreen({ onBegin, onBack }: EncounterIntroProps): 
       <text>Random monsters from the wild + story pools.</text>
       <text>Slay one and the next appears immediately.</text>
       <text>[esc] flees back to main menu.</text>
-    </Screen>
+    </SceneFrame>
+  );
+
+  return (
+    <Shell
+      screen="encounter"
+      scene={scene}
+      panel={<Prompt hint="[⏎] begin · [esc] back" />}
+    />
   );
 }
