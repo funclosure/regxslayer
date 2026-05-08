@@ -23,7 +23,10 @@ function Root(): React.ReactElement {
 async function main(): Promise<void> {
   process.env["REGXSLAYER_NO_COLOR"] = process.env["NO_COLOR"] ? "1" : "";
 
-  const renderer = await createCliRenderer({ exitOnCtrlC: true });
+  // useMouse: false leaves drag-to-select in the terminal's hands so users can
+  // copy text out of the TUI like they would in any other terminal program. The
+  // app is keyboard-only, so we lose nothing by turning mouse capture off.
+  const renderer = await createCliRenderer({ exitOnCtrlC: true, useMouse: false });
 
   const cleanup = (): void => {
     try { renderer.destroy(); } catch { /* ignore */ }
