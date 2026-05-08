@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildSplashRows, buildMenuItems, navigateMenu, CHAPTERS, buildContinueLabel, buildChapterRows, MONSTER_ART } from "@/screens/MenuScreen";
+import { buildSplashRows, buildMenuItems, CHAPTERS, buildContinueLabel, buildChapterRows, MONSTER_ART } from "@/screens/MenuScreen";
 import type { SaveFile } from "@/game/types";
 import { chapter as ch1 } from "@/content/chapter-1-literals";
 import { chapter as ch2 } from "@/content/chapter-2-charclasses";
@@ -18,19 +18,6 @@ describe("buildMenuItems", () => {
   test("shows Continue first when lastMode is set", () => {
     const items = buildMenuItems({ ...empty, lastMode: "encounter" });
     expect(items[0]!.key).toBe("continue");
-  });
-});
-
-describe("navigateMenu", () => {
-  test("down advances and wraps", () => {
-    expect(navigateMenu(3, 0, "down")).toBe(1);
-    expect(navigateMenu(3, 2, "down")).toBe(0);
-  });
-  test("up retreats and wraps", () => {
-    expect(navigateMenu(3, 0, "up")).toBe(2);
-  });
-  test("zero items returns 0", () => {
-    expect(navigateMenu(0, 0, "down")).toBe(0);
   });
 });
 

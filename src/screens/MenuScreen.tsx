@@ -78,14 +78,6 @@ export function buildSplashRows(save: SaveFile): string[] {
   return [...titleRows, ...bandRows, TAGLINE];
 }
 
-/** Backwards-compatible nav helper kept so existing consumers/tests don't break. */
-export function navigateMenu(itemCount: number, currentIdx: number, direction: "up" | "down"): number {
-  if (itemCount <= 0) return 0;
-  return direction === "down"
-    ? (currentIdx + 1) % itemCount
-    : (currentIdx + itemCount - 1) % itemCount;
-}
-
 function MenuSplash({ save }: { save: SaveFile }): React.ReactElement {
   const rows = buildSplashRows(save);
   const width = Math.max(...rows.map((row) => row.length), 0);

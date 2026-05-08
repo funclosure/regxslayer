@@ -1,6 +1,5 @@
-import React from "react";
-import { useTerminalDimensions } from "@gridland/utils";
-import { useSaveLifetime } from "@/components/SaveContext";
+/** Pure formatter for the single-row status line. The Shell renders this directly
+ *  via `formatStatusInfoRow`; there is no React component wrapper anymore. */
 
 export const BRAND = "regxslayer";
 
@@ -38,14 +37,3 @@ export function formatStatusInfoRow(
   return brand.slice(0, width);
 }
 
-export type StatusBarProps = {
-  screen: string;
-};
-
-/** Single-row status: brand · screen · slain · sessions, dashes filling the rest.
- *  No hint row — hints live in the input panel footer. */
-export function StatusBar({ screen }: StatusBarProps): React.ReactElement {
-  const { width } = useTerminalDimensions();
-  const { slain, sessions } = useSaveLifetime();
-  return <text>{formatStatusInfoRow(BRAND, screen, slain, sessions, width)}</text>;
-}

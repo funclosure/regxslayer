@@ -25,8 +25,8 @@ export function SaveProvider({ save, children }: SaveProviderProps): React.React
 
 /**
  * Returns the lifetime numbers from the nearest `<SaveProvider>`. Throws
- * if no provider is mounted — the StatusBar relies on this and should
- * never render outside the app shell.
+ * if no provider is mounted — the Shell relies on this and should never
+ * render outside the app provider tree.
  */
 export function useSaveLifetime(): { slain: number; sessions: number } {
   const save = React.useContext(SaveContext);
