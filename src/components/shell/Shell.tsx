@@ -40,11 +40,12 @@ export function Shell(props: ShellProps): React.ReactElement {
   const sizedPanel = React.cloneElement(panel, { capWidth });
 
   // Bound the column to the terminal height so the panel never renders past the
-  // visible area. The scene gets explicit flexShrink={1} so it (not the panel) is
-  // the region that clips when total intrinsic height exceeds terminal height.
+  // visible area. The scene lives inside a <scrollbox> so it scrolls vertically
+  // when intrinsic content exceeds the available scene height, instead of clipping.
+  // The status row + panel stay pinned at the bottom regardless of scroll position.
   const inner = (
     <box flexDirection="column" width={shellWidth} height={height}>
-      <box flexDirection="column" flexGrow={1} flexShrink={1}>{scene}</box>
+      <scrollbox flexGrow={1} flexShrink={1}>{scene}</scrollbox>
       <text>{status}</text>
       {sizedPanel}
     </box>

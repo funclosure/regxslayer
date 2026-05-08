@@ -9,17 +9,16 @@ export type SceneFrameProps = {
   width?: number;
 };
 
-/** Centered, fixed-width column wrapped in a scrollbox. Use for scene content
- *  that's just stacked text rows (selects, stats, victories). MenuScreen and
+/** Centered, fixed-width column for scene content that's just stacked text rows
+ *  (selects, stats, victories). The Shell wraps every scene in a <scrollbox> so
+ *  this helper only handles centering — no scrollbox of its own. MenuScreen and
  *  CombatScreen lay out their scene directly without this wrapper. */
 export function SceneFrame({ children, width = DEFAULT_SCENE_WIDTH }: SceneFrameProps): React.ReactElement {
   return (
-    <scrollbox flexGrow={1}>
-      <box flexDirection="column" alignItems="center">
-        <box flexDirection="column" width={width}>
-          {children}
-        </box>
+    <box flexDirection="column" alignItems="center">
+      <box flexDirection="column" width={width}>
+        {children}
       </box>
-    </scrollbox>
+    </box>
   );
 }
