@@ -43,6 +43,9 @@ bun run build
 - `↑`/`↓`/`⏎` — navigate menus
 - `Ctrl-C` — quit
 
+The terminal keeps its native click-and-drag behavior — you can select and
+copy text from any screen, just like in any non-TUI program.
+
 ## Saves
 
 Progress is saved to `~/.regxslayer/save.json` (or
