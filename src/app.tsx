@@ -14,6 +14,7 @@ import { EncounterVictoryScreen } from "@/screens/EncounterVictoryScreen";
 import { TutorialSelectScreen } from "@/screens/TutorialSelectScreen";
 import { StatsScreen } from "@/screens/StatsScreen";
 import { SaveProvider } from "@/components/SaveContext";
+import { AppNoticeProvider } from "@/components/shell/AppNotice";
 import {
   loadSave,
   recordKill,
@@ -296,10 +297,9 @@ export function App(): React.ReactElement {
 
   return (
     <SaveProvider save={save}>
-      <box flexDirection="column" flexGrow={1}>
-        <box flexGrow={1}>{routeJsx}</box>
-        {progressUnwritable ? <text>⚠ progress not saved</text> : null}
-      </box>
+      <AppNoticeProvider value={{ progressUnwritable }}>
+        {routeJsx}
+      </AppNoticeProvider>
     </SaveProvider>
   );
 }

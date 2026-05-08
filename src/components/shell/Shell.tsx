@@ -1,6 +1,7 @@
 import React from "react";
 import { useTerminalDimensions } from "@gridland/utils";
 import { useSaveLifetime } from "@/components/SaveContext";
+import { useAppNotice } from "@/components/shell/AppNotice";
 import { formatStatusInfoRow, BRAND } from "@/components/StatusBar";
 
 /** Cap width applied to non-combat shells on wide terminals. */
@@ -28,11 +29,15 @@ export function Shell(props: ShellProps): React.ReactElement {
   const { width, height } = useTerminalDimensions();
   const shellWidth = computeShellWidth(width, capWidth);
 
-  // Status row is rendered inline here (not via <StatusBar>) so the new shell stays
-  // single-row even while the legacy Screen wrapper still emits the two-row StatusBar.
-  // Stage 5 cleanup deletes the legacy hint row entirely.
+  // Status row is rendered inline so the bordered panel below it owns hint text —
+  // the previous two-row StatusBar collapsed into one row here.
   const { slain, sessions } = useSaveLifetime();
   const status = formatStatusInfoRow(BRAND, screen, slain, sessions, shellWidth);
+
+  // App-level chrome row: e.g. a save-write-failure warning. Renders above the
+  // status row only when set, so heights shift by exactly 1 row when the alert
+  // toggles. Lives in Shell because Shell owns the whole terminal-height column.
+  const notice = useAppNotice();
 
   // Inject capWidth into the panel so its internal width matches the shell — caller
   // never has to remember to pass capWidth to both. cloneElement merges, so panel
@@ -46,6 +51,7 @@ export function Shell(props: ShellProps): React.ReactElement {
   const inner = (
     <box flexDirection="column" width={shellWidth} height={height}>
       <scrollbox flexGrow={1} flexShrink={1}>{scene}</scrollbox>
+      {notice.progressUnwritable ? <text>⚠ progress not saved</text> : null}
       <text>{status}</text>
       {sizedPanel}
     </box>
